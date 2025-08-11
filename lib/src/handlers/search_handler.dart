@@ -677,18 +677,18 @@ class SearchHandler {
     if (implicitTags == null || implicitTags.trim().isEmpty) {
       return visibleTags;
     }
-    
+
     final String cleanVisibleTags = visibleTags.trim();
     final String cleanImplicitTags = implicitTags.trim();
-    
+
     if (cleanVisibleTags.isEmpty) {
       return cleanImplicitTags;
     }
-    
+
     if (cleanImplicitTags.isEmpty) {
       return cleanVisibleTags;
     }
-    
+
     // For Hydrus, tags are comma-separated, for others they're space-separated
     final String separator = currentBooru.type?.isHydrus == true ? ', ' : ' ';
     return '$cleanVisibleTags$separator$cleanImplicitTags';

@@ -97,43 +97,43 @@ Future<void> main() async {
       );
       expect(booruHandler, isA<RealbooruHandler>());
     });
-    
+
     test('Realbooru tag suggestions', () async {
       final booruHandler = RealbooruHandler(
         Booru('realbooru', BooruType.Realbooru, '', 'https://realbooru.com', ''),
         20,
       );
-      
+
       // Test that hasTagSuggestions is enabled
       expect(booruHandler.hasTagSuggestions, equals(true));
-      
+
       // Test URL generation
       final tagURL = booruHandler.makeTagURL('girl');
       expect(tagURL, equals('https://realbooru.com/autocomplete.php?q=girl&limit=20'));
-      
+
       // Test parsing with mock JSON response
       final mockJsonResponse = MockResponse('''[
         {"value": "girl", "count": 1234},
         {"value": "girls", "count": 567}
       ]''');
-      
+
       final jsonList = booruHandler.parseTagSuggestionsList(mockJsonResponse);
       expect(jsonList.length, equals(2));
-      
+
       final suggestion1 = booruHandler.parseTagSuggestion(jsonList[0], 0);
       expect(suggestion1?.tag, equals('girl'));
       expect(suggestion1?.count, equals(1234));
-      
+
       // Test parsing with mock text response
       final mockTextResponse = MockResponse('girl\ngirls\ngirl_on_top');
       final textList = booruHandler.parseTagSuggestionsList(mockTextResponse);
       expect(textList.length, equals(3));
-      
+
       final suggestion2 = booruHandler.parseTagSuggestion(textList[0], 0);
       expect(suggestion2?.tag, equals('girl'));
       expect(suggestion2?.count, equals(0)); // text format doesn't include counts
     }, skip: 'Enable when needed to test tag suggestions specifically');
-    
+
     test('GelbooruHandler', () async {
       final BooruHandler booruHandler = await testBooru(
         Booru('gelbooru', BooruType.Gelbooru, '', 'https://gelbooru.com', ''),

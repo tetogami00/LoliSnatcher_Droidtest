@@ -1895,8 +1895,8 @@ class SettingsHandler {
       }
 
       if (dbEnabled && tempList.isNotEmpty) {
-        tempList.add(Booru('Favourites', BooruType.Favourites, '', '', ''));
-        tempList.add(Booru('Downloads', BooruType.Downloads, '', '', ''));
+        tempList.add(Booru('Favourites', BooruType.Favourites, '', '', '', ''));
+        tempList.add(Booru('Downloads', BooruType.Downloads, '', '', '', ''));
       }
     } catch (e, s) {
       Logger.Inst().log(

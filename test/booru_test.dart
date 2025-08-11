@@ -59,19 +59,19 @@ Future<void> main() async {
   group('booru tests', () {
     test('BooruOnRailsHandler', () async {
       final BooruHandler booruHandler = await testBooru(
-        Booru('twibooru', BooruType.BooruOnRails, '', 'https://twibooru.org', ''),
+        Booru('twibooru', BooruType.BooruOnRails, '', 'https://twibooru.org', '', ''),
       );
       expect(booruHandler, isA<BooruOnRailsHandler>());
     });
     test('DanbooruHandler', () async {
       final BooruHandler booruHandler = await testBooru(
-        Booru('danbooru', BooruType.Danbooru, '', 'https://danbooru.donmai.us/', ''),
+        Booru('danbooru', BooruType.Danbooru, '', 'https://danbooru.donmai.us/', '', ''),
         hardFetchedLength: false,
       );
       expect(booruHandler, isA<DanbooruHandler>());
     });
     test('e621Handler', () async {
-      final BooruHandler booruHandler = await testBooru(Booru('e621', BooruType.e621, '', 'https://e621.net/', ''));
+      final BooruHandler booruHandler = await testBooru(Booru('e621', BooruType.e621, '', 'https://e621.net/', '', ''));
       expect(booruHandler, isA<e621Handler>());
     });
 

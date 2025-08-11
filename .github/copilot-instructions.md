@@ -40,7 +40,8 @@ Run these commands to bootstrap and set up the development environment:
    # Generate empty secrets configuration
    sh gen_config.sh
    
-   # Install project dependencies - NEVER CANCEL: Takes 3-5 minutes
+   # Install project dependencies - NEVER CANCEL: Takes 5-10 minutes
+   # Project has 100+ dependencies including 6 git-based packages
    fvm flutter pub get
    # OR if using Flutter directly:
    flutter pub get
@@ -59,12 +60,12 @@ Use the custom build script which handles different deployment targets:
 ./build.sh store      # For Play Store (AAB format)
 ```
 
-**NEVER CANCEL**: Build process takes 15-25 minutes depending on configuration. Set timeout to 45+ minutes.
+**NEVER CANCEL**: Build process takes 20-35 minutes depending on configuration. Set timeout to 60+ minutes.
 
-**Build timing expectations**:
-- Testing build: ~15 minutes (APK with architecture splits)
-- GitHub build: ~20 minutes (Release APK with splits)
-- Store build: ~25 minutes (AAB format for Play Store)
+**Build timing expectations** (for 60k+ lines of code with many dependencies):
+- Testing build: ~20 minutes (APK with architecture splits)
+- GitHub build: ~25 minutes (Release APK with splits)
+- Store build: ~35 minutes (AAB format for Play Store)
 
 ### Testing
 Run the comprehensive test suite:
@@ -79,7 +80,7 @@ flutter test
 fvm flutter test test/booru_test.dart
 ```
 
-**NEVER CANCEL**: Test suite takes 10-15 minutes to complete as it tests multiple booru handlers and network endpoints. Set timeout to 30+ minutes.
+**NEVER CANCEL**: Test suite takes 15-20 minutes to complete as it tests multiple booru handlers and network endpoints. Set timeout to 40+ minutes.
 
 ### Development Workflow
 For active development with hot reload:
@@ -94,7 +95,7 @@ flutter run
 fvm flutter run --dart-define=LS_IS_TESTING=true --dart-define-from-file=./config/secrets.json
 ```
 
-**NEVER CANCEL**: Initial compilation and device setup takes 5-10 minutes. Set timeout to 20+ minutes.
+**NEVER CANCEL**: Initial compilation and device setup takes 8-15 minutes. Set timeout to 30+ minutes.
 
 ## Validation
 
@@ -102,15 +103,18 @@ fvm flutter run --dart-define=LS_IS_TESTING=true --dart-define-from-file=./confi
 After making changes, ALWAYS run through these validation scenarios:
 
 1. **Basic App Functionality**:
-   - Launch the app successfully
+   - Launch the app successfully (should show main screen within 30 seconds)
    - Navigate through main screens (search, settings, downloads)
-   - Test image loading from at least one booru source
+   - Test image loading from at least one booru source (e.g., safebooru.org)
    - Verify batch download functionality works
+   - Test settings persistence and app restart
 
 2. **Build Validation**:
    - Test build succeeds for your target configuration
-   - Verify APK/AAB file is generated correctly
+   - Verify APK/AAB file is generated correctly in build/app/outputs/
    - Check app installs and runs on target platform
+   - For testing builds: Verify 3 APK files are generated (arm64-v8a, armeabi-v7a, x86_64)
+   - For store builds: Verify single AAB file is generated
 
 3. **Code Quality Validation**:
    ```bash
@@ -123,6 +127,12 @@ After making changes, ALWAYS run through these validation scenarios:
    # Check for additional issues
    fvm dart fix --apply
    ```
+
+4. **Network and API Validation**:
+   - Test at least 3 different booru sources from the test suite
+   - Verify image thumbnails load correctly
+   - Test search functionality with basic queries
+   - Validate download progress and completion
 
 ### VSCode Development
 The project includes pre-configured VSCode settings:
@@ -176,7 +186,7 @@ Access via Command Palette:
 ## Common Issues and Solutions
 
 ### Network/Connectivity Issues
-If you encounter download failures:
+If you encounter download failures during `flutter pub get`:
 ```bash
 # Clear Flutter cache and retry
 flutter clean
@@ -185,25 +195,55 @@ fvm flutter pub get
 # For persistent issues, configure proxy if needed
 export HTTP_PROXY=http://your-proxy:port
 export HTTPS_PROXY=http://your-proxy:port
+
+# Alternative: Use --offline flag if packages are cached
+flutter pub get --offline
 ```
 
 ### Build Failures
 ```bash
-# Clean build cache
+# Clean build cache completely
 flutter clean
 rm -rf build/
+rm -rf .dart_tool/
 
 # Regenerate configuration
 sh gen_config.sh
 
 # Retry build
 ./build.sh [target]
+
+# If Gradle issues occur:
+cd android && ./gradlew clean && cd ..
 ```
 
 ### Test Failures
 - Booru tests may fail due to network connectivity or site changes
 - Image loading tests are disabled by default (`runWithImages = false`)
 - Test timeouts are normal for network-dependent tests
+- Individual booru handler failures don't indicate code issues
+
+### FVM Issues
+```bash
+# If FVM fails to install Flutter version:
+fvm install 3.32.8 --skip-setup
+
+# If FVM commands fail, fall back to direct Flutter:
+export PATH="/path/to/flutter/bin:$PATH"
+flutter channel stable
+flutter upgrade
+
+# Check Flutter installation:
+flutter doctor -v
+```
+
+### VSCode Issues
+```bash
+# If Dart/Flutter extensions don't work:
+# 1. Ensure Flutter SDK path is configured in VSCode settings
+# 2. Reload VSCode window (Ctrl+Shift+P -> "Developer: Reload Window")
+# 3. Run "Flutter: Change SDK" command if needed
+```
 
 ## Critical Reminders
 
@@ -212,7 +252,7 @@ sh gen_config.sh
 - **ALWAYS** test basic app functionality after code changes
 - **REQUIRED**: Use the custom build script for production builds
 - **REQUIRED**: Generate secrets config before building or debugging
-- Set timeouts of 45+ minutes for builds, 30+ minutes for tests, 20+ minutes for initial runs
+- Set timeouts of 60+ minutes for builds, 40+ minutes for tests, 30+ minutes for initial runs
 
 ## Dependencies Management
 
@@ -228,14 +268,64 @@ fvm flutter pub upgrade
 fvm flutter pub outdated
 ```
 
+## Quick Reference Commands
+
+### Essential Daily Commands
+```bash
+# Setup (run once)
+sh gen_config.sh
+fvm flutter pub get
+
+# Development
+fvm flutter run                    # Start with hot reload
+fvm flutter analyze               # Lint code  
+fvm flutter format .              # Format code
+fvm flutter test                  # Run tests
+
+# Building
+./build.sh testing               # Development build
+./build.sh github                # Release build
+./build.sh store                 # Play Store build
+
+# Cleanup
+flutter clean                    # Clear build cache
+```
+
+### File Locations to Know
+- `config/secrets.json` - Generated configuration (git ignored)
+- `build/app/outputs/flutter-apk/` - APK output location
+- `build/app/outputs/bundle/release/` - AAB output location  
+- `lib/src/handlers/` - Core application logic
+- `lib/src/boorus/` - Site-specific API handlers
+- `test/booru_test.dart` - Main test suite
+
 ## Platform-Specific Notes
 
-### Android
-- Minimum SDK: Check android/app/build.gradle
-- Target SDK: Latest stable Android API level
-- Architecture support: arm64-v8a, armeabi-v7a, x86_64
+### Android SDK Requirements
+Before building, ensure Android SDK is configured:
+
+```bash
+# Required Android SDK components
+# - Android SDK 23+ (minimum supported)
+# - Android SDK 35 (compile target)
+# - NDK 27.2.12479018
+# - Java 17+
+
+# Check requirements:
+flutter doctor -v
+
+# Install missing Android components via Android Studio
+# or command line tools
+```
+
+### Architecture Support
+- **arm64-v8a**: Primary 64-bit ARM architecture (most modern devices)
+- **armeabi-v7a**: 32-bit ARM architecture (older devices)
+- **x86_64**: Intel 64-bit architecture (emulators, some tablets)
 
 ### Linux/Windows  
 - Desktop support enabled in Flutter 3.32.8
 - Build support available but may require additional setup
+- Primary focus is Android development
+- Primary focus is Android development
 - Primary focus is Android development

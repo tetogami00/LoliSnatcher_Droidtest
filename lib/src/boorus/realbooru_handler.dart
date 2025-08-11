@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 
 import 'package:lolisnatcher/src/data/booru_item.dart';
+import 'package:lolisnatcher/src/data/tag_suggestion.dart';
 import 'package:lolisnatcher/src/data/tag_type.dart';
 import 'package:lolisnatcher/src/handlers/booru_handler.dart';
 import 'package:lolisnatcher/src/utils/dio_network.dart';
@@ -21,6 +24,9 @@ class RealbooruHandler extends BooruHandler {
       return super.validateTags(tags);
     }
   }
+
+  @override
+  bool get hasTagSuggestions => true;
 
   @override
   bool get hasLoadItemSupport => true;
@@ -144,6 +150,56 @@ class RealbooruHandler extends BooruHandler {
   @override
   String makeURL(String tags) {
     return "${booru.baseURL}/index.php?page=post&s=list&tags=${tags.replaceAll(" ", "+")}&pid=${pageNum * limit}";
+  }
+
+  @override
+  String makeTagURL(String input) {
+    // EXAMPLE: https://realbooru.com/autocomplete.php?q=girl&limit=20
+    return '${booru.baseURL}/autocomplete.php?q=$input&limit=20';
+  }
+
+  @override
+  List parseTagSuggestionsList(dynamic response) {
+    // Response format can be JSON array or plain text, handle both
+    try {
+      if (response.data is String) {
+        final decoded = jsonDecode(response.data);
+        return decoded is List ? decoded : [];
+      } else if (response.data is List) {
+        return response.data;
+      }
+    } catch (e) {
+      // If JSON parsing fails, try treating as plain text
+      if (response.data is String) {
+        return response.data.split('\n').where((line) => line.trim().isNotEmpty).toList();
+      }
+    }
+    return [];
+  }
+
+  @override
+  TagSuggestion? parseTagSuggestion(dynamic responseItem, int index) {
+    String tagStr = '';
+    int count = 0;
+    
+    if (responseItem is String) {
+      // Handle plain text format
+      tagStr = responseItem.trim();
+    } else if (responseItem is Map<String, dynamic>) {
+      // Handle JSON object format with possible keys
+      tagStr = responseItem['value'] ?? responseItem['tag'] ?? responseItem['name'] ?? '';
+      count = int.tryParse((responseItem['count'] ?? responseItem['post_count'] ?? '0').toString()) ?? 0;
+    }
+    
+    if (tagStr.isEmpty) {
+      return null;
+    }
+
+    return TagSuggestion(
+      tag: tagStr,
+      type: TagType.none, // Realbooru doesn't typically provide tag types in autocomplete
+      count: count,
+    );
   }
 }
 

@@ -605,8 +605,11 @@ class SearchHandler {
       pageNum++;
     }
 
+    // combine visible tags with implicit tags
+    final String combinedTags = _combineTagsWithImplicit(currentTab.tags, currentBooru.implicitTags);
+
     // fetch new items, but get results from booruHandler and not search itself
-    await currentBooruHandler.search(currentTab.tags, null);
+    await currentBooruHandler.search(combinedTags, null);
     // print('FINISHED SEARCH: ${booruhandler.filteredFetched.length}');
 
     // lock new loads if handler detected last page
@@ -621,7 +624,7 @@ class SearchHandler {
 
     // request total image count if not already loaded
     if (currentBooruHandler.totalCount.value == 0) {
-      unawaited(currentBooruHandler.searchCount(currentTab.tags));
+      unawaited(currentBooruHandler.searchCount(combinedTags));
     }
 
     // check to avoid requests from old tab instances resetting loading state
@@ -667,6 +670,29 @@ class SearchHandler {
   // hack to allow global restates to force refresh of everything (mainly used when saving settings when exiting settings page)
   VoidCallback? rootRestate;
   void setRootRestate(VoidCallback? rootSetStateCallback) => rootRestate = rootSetStateCallback;
+
+  /// Combines visible tags with implicit tags from the booru
+  /// Returns the combined tag string for search
+  String _combineTagsWithImplicit(String visibleTags, String? implicitTags) {
+    if (implicitTags == null || implicitTags.trim().isEmpty) {
+      return visibleTags;
+    }
+
+    final String cleanVisibleTags = visibleTags.trim();
+    final String cleanImplicitTags = implicitTags.trim();
+
+    if (cleanVisibleTags.isEmpty) {
+      return cleanImplicitTags;
+    }
+
+    if (cleanImplicitTags.isEmpty) {
+      return cleanVisibleTags;
+    }
+
+    // For Hydrus, tags are comma-separated, for others they're space-separated
+    final String separator = currentBooru.type?.isHydrus == true ? ', ' : ' ';
+    return '$cleanVisibleTags$separator$cleanImplicitTags';
+  }
 
   void dispose() {
     _scrollStream?.close();

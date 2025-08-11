@@ -45,6 +45,7 @@ class _BooruEditState extends State<BooruEdit> {
   final booruAPIKeyController = TextEditingController();
   final booruUserIDController = TextEditingController();
   final booruDefTagsController = TextEditingController();
+  final booruImplicitTagsController = TextEditingController();
 
   BooruType? booruType;
   BooruType selectedBooruType = BooruType.Autodetect;
@@ -100,6 +101,7 @@ class _BooruEditState extends State<BooruEdit> {
       booruAPIKeyController.text = widget.booru.apiKey ?? '';
       booruUserIDController.text = widget.booru.userID ?? '';
       booruDefTagsController.text = widget.booru.defTags ?? '';
+      booruImplicitTagsController.text = widget.booru.implicitTags ?? '';
       selectedBooruType = BooruType.values.contains(widget.booru.type) ? widget.booru.type! : selectedBooruType;
     }
   }
@@ -112,6 +114,7 @@ class _BooruEditState extends State<BooruEdit> {
     booruAPIKeyController.dispose();
     booruUserIDController.dispose();
     booruDefTagsController.dispose();
+    booruImplicitTagsController.dispose();
     super.dispose();
   }
 
@@ -187,6 +190,15 @@ class _BooruEditState extends State<BooruEdit> {
               onChanged: (_) => setState(() {}),
               title: 'Default tags',
               hintText: 'Default search for booru',
+              clearable: true,
+              pasteable: true,
+              enableIMEPersonalizedLearning: !settingsHandler.incognitoKeyboard,
+            ),
+            SettingsTextInput(
+              controller: booruImplicitTagsController,
+              onChanged: (_) => setState(() {}),
+              title: 'Implicit tags',
+              hintText: 'Always included in searches (not shown in search bar)',
               clearable: true,
               pasteable: true,
               enableIMEPersonalizedLearning: !settingsHandler.incognitoKeyboard,
@@ -386,6 +398,7 @@ class _BooruEditState extends State<BooruEdit> {
             booruFaviconController.text,
             booruURLController.text,
             booruDefTagsController.text,
+            booruImplicitTagsController.text,
           );
         } else {
           testBooru = Booru.withKey(
@@ -396,6 +409,7 @@ class _BooruEditState extends State<BooruEdit> {
             booruDefTagsController.text,
             booruAPIKeyController.text,
             booruUserIDController.text,
+            booruImplicitTagsController.text,
           );
         }
         isTesting = true;
@@ -524,6 +538,7 @@ class _BooruEditState extends State<BooruEdit> {
             booruFaviconController.text,
             booruURLController.text,
             booruDefTagsController.text,
+            booruImplicitTagsController.text,
           )
         : Booru.withKey(
             booruNameController.text,
@@ -533,6 +548,7 @@ class _BooruEditState extends State<BooruEdit> {
             booruDefTagsController.text,
             booruAPIKeyController.text,
             booruUserIDController.text,
+            booruImplicitTagsController.text,
           );
 
     bool booruExists = false;
@@ -726,6 +742,7 @@ class _HydrusAccessKeyWidget extends StatelessWidget {
                   BooruType.Hydrus,
                   'Hydrus',
                   urlController.text,
+                  '',
                   '',
                 ),
                 5,

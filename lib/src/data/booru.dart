@@ -9,10 +9,11 @@ class Booru {
     this.type,
     this.faviconURL,
     this.baseURL,
-    this.defTags,
-  );
+    this.defTags, [
+    this.implicitTags,
+  ]);
 
-  Booru.unknown() : this(null, null, null, null, null);
+  Booru.unknown() : this(null, null, null, null, null, null);
 
   Booru.withKey(
     this.name,
@@ -21,8 +22,9 @@ class Booru {
     this.baseURL,
     this.defTags,
     this.apiKey,
-    this.userID,
-  );
+    this.userID, [
+    this.implicitTags,
+  ]);
 
   Booru.fromJSON(String jsonString) {
     final Map<String, dynamic> json = jsonDecode(jsonString);
@@ -39,7 +41,7 @@ class Booru {
     setFromMap(json);
   }
 
-  String? name = '', faviconURL = '', baseURL = '', apiKey = '', userID = '', defTags = '';
+  String? name = '', faviconURL = '', baseURL = '', apiKey = '', userID = '', defTags = '', implicitTags = '';
   BooruType? type;
 
   Map<String, dynamic> toJson() {
@@ -49,6 +51,7 @@ class Booru {
       'faviconURL': faviconURL,
       'baseURL': baseURL,
       'defTags': defTags,
+      'implicitTags': implicitTags,
       'apiKey': apiKey,
       'userID': userID,
     };
@@ -70,13 +73,14 @@ class Booru {
     faviconURL = json['faviconURL']?.toString();
     baseURL = json['baseURL']?.toString();
     defTags = json['defTags']?.toString();
+    implicitTags = json['implicitTags']?.toString() ?? '';
     apiKey = json['apiKey']?.toString();
     userID = json['userID']?.toString();
   }
 
   @override
   String toString() {
-    return 'Name: $name, Type: $type, BaseURL: $baseURL, FaviconURL: $faviconURL, APIKey: $apiKey, UserID: $userID';
+    return 'Name: $name, Type: $type, BaseURL: $baseURL, FaviconURL: $faviconURL, APIKey: $apiKey, UserID: $userID, ImplicitTags: $implicitTags';
   }
 
   Booru copyWith({
@@ -85,6 +89,7 @@ class Booru {
     String? faviconURL,
     String? baseURL,
     String? defTags,
+    String? implicitTags,
     String? apiKey,
     String? userID,
   }) {
@@ -96,6 +101,7 @@ class Booru {
       defTags ?? this.defTags,
       apiKey ?? this.apiKey,
       userID ?? this.userID,
+      implicitTags ?? this.implicitTags,
     );
   }
 }

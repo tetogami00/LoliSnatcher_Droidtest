@@ -181,7 +181,7 @@ class RealbooruHandler extends BooruHandler {
   TagSuggestion? parseTagSuggestion(dynamic responseItem, int index) {
     String tagStr = '';
     int count = 0;
-    
+
     if (responseItem is String) {
       // Handle plain text format
       tagStr = responseItem.trim();
@@ -190,7 +190,7 @@ class RealbooruHandler extends BooruHandler {
       tagStr = responseItem['value'] ?? responseItem['tag'] ?? responseItem['name'] ?? '';
       count = int.tryParse((responseItem['count'] ?? responseItem['post_count'] ?? '0').toString()) ?? 0;
     }
-    
+
     if (tagStr.isEmpty) {
       return null;
     }

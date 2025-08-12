@@ -55,3 +55,7 @@
 Notes.txt
 
 flutter.tar.xz
+
+# Build artifacts
+build/
+.cxx/

@@ -1,0 +1,100 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'testing'
+        type: choice
+        options:
+        - testing
+        - github
+        - store
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Install FVM
+      run: |
+        curl -fsSL https://fvm.app/install.sh | bash
+        echo "$HOME/.fvm_flutter/bin" >> $GITHUB_PATH
+        source ~/.bashrc
+    
+    - name: Setup Flutter with FVM
+      run: |
+        fvm install 3.32.8
+        fvm use 3.32.8
+        fvm flutter --version
+    
+    - name: Generate configuration
+      run: sh gen_config.sh
+    
+    - name: Get dependencies
+      run: fvm flutter pub get
+      timeout-minutes: 10
+    
+    - name: Build APK
+      run: |
+        BUILD_TYPE="${{ github.event.inputs.build_type || 'testing' }}"
+        echo "Building with type: $BUILD_TYPE"
+        timeout 60m ./build.sh "$BUILD_TYPE"
+      timeout-minutes: 60
+    
+    - name: Get build info
+      id: build_info
+      run: |
+        VERSION=$(grep "version:" pubspec.yaml | awk '{print $2}' | cut -d'+' -f1)
+        BUILD=$(grep "version:" pubspec.yaml | awk '{print $2}' | cut -d'+' -f2)
+        BUILD_TYPE="${{ github.event.inputs.build_type || 'testing' }}"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "build=$BUILD" >> $GITHUB_OUTPUT
+        echo "build_type=$BUILD_TYPE" >> $GITHUB_OUTPUT
+    
+    - name: Upload APK artifacts (Testing/GitHub builds)
+      if: steps.build_info.outputs.build_type != 'store'
+      uses: actions/upload-artifact@v4
+      with:
+        name: LoliSnatcher-${{ steps.build_info.outputs.version }}-${{ steps.build_info.outputs.build }}-${{ steps.build_info.outputs.build_type }}
+        path: |
+          build/app/outputs/flutter-apk/LoliSnatcher_*_arm64-v8a_*.apk
+          build/app/outputs/flutter-apk/LoliSnatcher_*_armeabi-v7a_*.apk
+          build/app/outputs/flutter-apk/LoliSnatcher_*_x86_64_*.apk
+        retention-days: 30
+        compression-level: 0
+    
+    - name: Upload AAB artifacts (Store builds)
+      if: steps.build_info.outputs.build_type == 'store'
+      uses: actions/upload-artifact@v4
+      with:
+        name: LoliSnatcher-${{ steps.build_info.outputs.version }}-${{ steps.build_info.outputs.build }}-store-aab
+        path: build/app/outputs/bundle/release/LoliSnatcher_*_appbundle_store.aab
+        retention-days: 30
+        compression-level: 0
+    
+    - name: List built files
+      run: |
+        echo "Built files:"
+        if [ "${{ steps.build_info.outputs.build_type }}" = "store" ]; then
+          ls -lh build/app/outputs/bundle/release/
+        else
+          ls -lh build/app/outputs/flutter-apk/
+        fi

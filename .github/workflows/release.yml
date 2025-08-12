@@ -1,0 +1,146 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name for release'
+        required: true
+        default: 'v2.4.4'
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'github'
+        type: choice
+        options:
+        - testing
+        - github
+        - store
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Install FVM
+      run: |
+        curl -fsSL https://fvm.app/install.sh | bash
+        echo "$HOME/.fvm_flutter/bin" >> $GITHUB_PATH
+        source ~/.bashrc
+    
+    - name: Setup Flutter with FVM
+      run: |
+        fvm install 3.32.8
+        fvm use 3.32.8
+        fvm flutter --version
+    
+    - name: Generate configuration
+      run: sh gen_config.sh
+    
+    - name: Get dependencies
+      run: fvm flutter pub get
+      timeout-minutes: 10
+    
+    - name: Build APK/AAB
+      run: |
+        BUILD_TYPE="${{ github.event.inputs.build_type || 'github' }}"
+        echo "Building with type: $BUILD_TYPE"
+        timeout 60m ./build.sh "$BUILD_TYPE"
+      timeout-minutes: 60
+    
+    - name: Get build info
+      id: build_info
+      run: |
+        VERSION=$(grep "version:" pubspec.yaml | awk '{print $2}' | cut -d'+' -f1)
+        BUILD=$(grep "version:" pubspec.yaml | awk '{print $2}' | cut -d'+' -f2)
+        BUILD_TYPE="${{ github.event.inputs.build_type || 'github' }}"
+        TAG_NAME="${{ github.event.inputs.tag_name || github.ref_name }}"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "build=$BUILD" >> $GITHUB_OUTPUT
+        echo "build_type=$BUILD_TYPE" >> $GITHUB_OUTPUT
+        echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+    
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.build_info.outputs.tag_name }}
+        release_name: LoliSnatcher ${{ steps.build_info.outputs.version }}
+        body: |
+          ## LoliSnatcher ${{ steps.build_info.outputs.version }} Release
+          
+          ### Build Information
+          - Version: ${{ steps.build_info.outputs.version }}
+          - Build Number: ${{ steps.build_info.outputs.build }}
+          - Build Type: ${{ steps.build_info.outputs.build_type }}
+          
+          ### APK Downloads
+          Download the appropriate APK for your device architecture:
+          - **arm64-v8a**: Modern 64-bit ARM devices (recommended for most phones)
+          - **armeabi-v7a**: Older 32-bit ARM devices
+          - **x86_64**: Intel-based devices and some emulators
+          
+          ### Installation
+          1. Download the appropriate APK for your device
+          2. Enable "Install from unknown sources" in your device settings
+          3. Install the APK file
+          
+          Built with Flutter ${{ env.FLUTTER_VERSION }}
+        draft: false
+        prerelease: false
+    
+    - name: Upload APK assets (Non-store builds)
+      if: steps.build_info.outputs.build_type != 'store'
+      run: |
+        for apk in build/app/outputs/flutter-apk/LoliSnatcher_*_*_${{ steps.build_info.outputs.build_type }}.apk; do
+          if [ -f "$apk" ]; then
+            filename=$(basename "$apk")
+            echo "Uploading $filename"
+            curl -X POST \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Content-Type: application/vnd.android.package-archive" \
+              --data-binary @"$apk" \
+              "${{ steps.create_release.outputs.upload_url }}?name=$filename&label=$filename"
+          fi
+        done
+    
+    - name: Upload AAB asset (Store builds)
+      if: steps.build_info.outputs.build_type == 'store'
+      run: |
+        for aab in build/app/outputs/bundle/release/LoliSnatcher_*_appbundle_store.aab; do
+          if [ -f "$aab" ]; then
+            filename=$(basename "$aab")
+            echo "Uploading $filename"
+            curl -X POST \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary @"$aab" \
+              "${{ steps.create_release.outputs.upload_url }}?name=$filename&label=$filename"
+          fi
+        done
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: LoliSnatcher-${{ steps.build_info.outputs.version }}-${{ steps.build_info.outputs.build }}-release-${{ steps.build_info.outputs.build_type }}
+        path: |
+          build/app/outputs/flutter-apk/LoliSnatcher_*.apk
+          build/app/outputs/bundle/release/LoliSnatcher_*.aab
+        retention-days: 90
+        compression-level: 0

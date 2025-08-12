@@ -1,0 +1,158 @@
+name: APK Release to Repository
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'testing'
+        type: choice
+        options:
+        - testing
+        - github
+        - store
+      commit_apks:
+        description: 'Commit APKs to repository (uses Git LFS)'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+
+jobs:
+  build-and-commit:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Setup Git LFS
+      run: |
+        git lfs install
+        git lfs track "*.apk"
+        git lfs track "*.aab"
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Install FVM
+      run: |
+        curl -fsSL https://fvm.app/install.sh | bash
+        echo "$HOME/.fvm_flutter/bin" >> $GITHUB_PATH
+        source ~/.bashrc
+    
+    - name: Setup Flutter with FVM
+      run: |
+        fvm install 3.32.8
+        fvm use 3.32.8
+        fvm flutter --version
+    
+    - name: Generate configuration
+      run: sh gen_config.sh
+    
+    - name: Get dependencies
+      run: fvm flutter pub get
+      timeout-minutes: 10
+    
+    - name: Build APK/AAB
+      run: |
+        BUILD_TYPE="${{ github.event.inputs.build_type }}"
+        echo "Building with type: $BUILD_TYPE"
+        # For testing/github builds, use debug signing to avoid signing config issues
+        if [ "$BUILD_TYPE" = "testing" ] || [ "$BUILD_TYPE" = "github" ]; then
+          fvm flutter build apk --debug --split-per-abi --dart-define=LS_IS_TESTING=true --dart-define-from-file=./config/secrets.json
+        else
+          timeout 60m ./build.sh "$BUILD_TYPE"
+        fi
+      timeout-minutes: 60
+    
+    - name: Get build info and organize APKs
+      id: build_info
+      run: |
+        VERSION=$(grep "version:" pubspec.yaml | awk '{print $2}' | cut -d'+' -f1)
+        BUILD=$(grep "version:" pubspec.yaml | awk '{print $2}' | cut -d'+' -f2)
+        BUILD_TYPE="${{ github.event.inputs.build_type }}"
+        
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "build=$BUILD" >> $GITHUB_OUTPUT
+        echo "build_type=$BUILD_TYPE" >> $GITHUB_OUTPUT
+        
+        # Create releases directory
+        mkdir -p releases/apks
+        
+        # Copy and rename APKs based on build type
+        if [ "$BUILD_TYPE" = "store" ]; then
+          # Handle AAB files for store builds
+          if [ -f "build/app/outputs/bundle/release/LoliSnatcher_${VERSION}_${BUILD}_appbundle_store.aab" ]; then
+            cp "build/app/outputs/bundle/release/LoliSnatcher_${VERSION}_${BUILD}_appbundle_store.aab" "releases/apks/"
+          fi
+        else
+          # Handle APK files for testing/github builds
+          BUILD_SUFFIX=""
+          if [ "$BUILD_TYPE" = "testing" ] || [ "$BUILD_TYPE" = "github" ]; then
+            BUILD_SUFFIX="debug"
+          else
+            BUILD_SUFFIX="$BUILD_TYPE"
+          fi
+          
+          # Copy built APKs
+          for arch in arm64-v8a armeabi-v7a x86_64; do
+            src_file="build/app/outputs/flutter-apk/app-${arch}-debug.apk"
+            if [ -f "$src_file" ]; then
+              dest_file="releases/apks/LoliSnatcher_${VERSION}_${BUILD}_${arch}_${BUILD_SUFFIX}.apk"
+              cp "$src_file" "$dest_file"
+              echo "Copied $src_file to $dest_file"
+            fi
+          done
+        fi
+        
+        # List all built files
+        echo "Built files in releases/apks:"
+        ls -lh releases/apks/
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: LoliSnatcher-${{ steps.build_info.outputs.version }}-${{ steps.build_info.outputs.build }}-${{ steps.build_info.outputs.build_type }}
+        path: releases/apks/*
+        retention-days: 30
+        compression-level: 0
+    
+    - name: Commit APKs to repository
+      if: github.event.inputs.commit_apks == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        git add .gitattributes
+        git add releases/
+        
+        # Check if there are changes to commit
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Add APK release v${{ steps.build_info.outputs.version }}-${{ steps.build_info.outputs.build }} (${{ steps.build_info.outputs.build_type }})"
+          git push
+        fi
+    
+    - name: Create release summary
+      run: |
+        echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- Version: ${{ steps.build_info.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Build: ${{ steps.build_info.outputs.build }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Build Type: ${{ steps.build_info.outputs.build_type }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Committed to repo: ${{ github.event.inputs.commit_apks }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Built Files" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        ls -lh releases/apks/ >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY

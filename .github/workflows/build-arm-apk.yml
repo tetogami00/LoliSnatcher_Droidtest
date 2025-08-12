@@ -1,0 +1,70 @@
+name: Build ARM GitHub APK
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  build-arm-apk:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Install FVM
+      run: |
+        curl -fsSL https://fvm.app/install.sh | bash
+        echo "$HOME/.fvm_flutter/bin" >> $GITHUB_PATH
+        source ~/.bashrc || true
+    
+    - name: Setup Flutter with FVM
+      run: |
+        fvm install 3.32.8
+        fvm use 3.32.8
+        fvm flutter --version
+    
+    - name: Generate configuration
+      run: sh gen_config.sh
+    
+    - name: Get dependencies
+      run: fvm flutter pub get
+      timeout-minutes: 10
+    
+    - name: Build GitHub APK (ARM64)
+      run: |
+        echo "Building GitHub APK for ARM64 architecture"
+        timeout 60m ./build.sh github
+      timeout-minutes: 60
+    
+    - name: Get build info
+      id: build_info
+      run: |
+        VERSION=$(grep "version:" pubspec.yaml | awk '{print $2}' | cut -d'+' -f1)
+        BUILD=$(grep "version:" pubspec.yaml | awk '{print $2}' | cut -d'+' -f2)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "build=$BUILD" >> $GITHUB_OUTPUT
+    
+    - name: Upload ARM GitHub APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: LoliSnatcher-${{ steps.build_info.outputs.version }}-${{ steps.build_info.outputs.build }}-arm64-github
+        path: build/app/outputs/flutter-apk/LoliSnatcher_*_arm64-v8a_github.apk
+        retention-days: 30
+        compression-level: 0
+    
+    - name: List built files
+      run: |
+        echo "Built ARM APK files:"
+        ls -lh build/app/outputs/flutter-apk/ | grep arm64-v8a

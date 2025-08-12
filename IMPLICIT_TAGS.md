@@ -29,8 +29,8 @@ The implicit tags feature allows users to configure tags that are automatically 
 
 ### Search Logic
 
-- Modified `SearchHandler.runSearch()` to combine visible tags with implicit tags
-- Tags are combined just before sending to the booru handler
+- Modified `SearchHandler.runSearch()` to place implicit tags before visible tags
+- Tags are combined with implicit tags first for proper search processing order  
 - Supports both space-separated (regular boorus) and comma-separated (Hydrus) tags
 - Applied to both regular searches and retry searches
 
@@ -38,7 +38,8 @@ The implicit tags feature allows users to configure tags that are automatically 
 
 ```dart
 String _combineTagsWithImplicit(String visibleTags, String? implicitTags) {
-  // Combines visible search tags with booru's implicit tags
+  // Combines implicit tags with visible search tags
+  // Places implicit tags first for proper processing order (ordering/filtering before content)
   // Handles empty cases and different tag separators
 }
 ```
@@ -46,7 +47,7 @@ String _combineTagsWithImplicit(String visibleTags, String? implicitTags) {
 ## User Experience
 
 1. **Configuration**: Users can set implicit tags in the booru edit page
-2. **Search Behavior**: When searching for "cat girl", if implicit tags are "order:score", the actual search becomes "cat girl order:score"
+2. **Search Behavior**: When searching for "cat girl", if implicit tags are "order:score", the actual search becomes "order:score cat girl"
 3. **Search Bar**: Only shows "cat girl" - implicit tags remain hidden
 4. **Consistency**: Every search on that booru profile automatically includes the implicit tags
 
@@ -57,7 +58,7 @@ String _combineTagsWithImplicit(String visibleTags, String? implicitTags) {
 - Implicit Tags: "order:score rating:safe width:>=1920"
 
 **User Search:** "cat girl"
-**Actual API Call:** "cat girl order:score rating:safe width:>=1920"
+**Actual API Call:** "order:score rating:safe width:>=1920 cat girl"
 **Search Bar Shows:** "cat girl"
 
 ## Backward Compatibility

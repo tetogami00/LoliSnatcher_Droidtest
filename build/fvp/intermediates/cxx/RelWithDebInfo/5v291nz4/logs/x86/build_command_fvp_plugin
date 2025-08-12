@@ -1,0 +1,4 @@
+/usr/local/lib/android/sdk/cmake/3.22.1/bin/ninja \
+  -C \
+  /home/runner/.pub-cache/hosted/pub.dev/fvp-0.33.1/android/.cxx/RelWithDebInfo/5v291nz4/x86 \
+  fvp_plugin

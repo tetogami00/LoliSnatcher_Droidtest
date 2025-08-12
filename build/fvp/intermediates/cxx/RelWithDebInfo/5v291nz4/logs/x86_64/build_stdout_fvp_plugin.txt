@@ -1,0 +1,4 @@
+ninja: Entering directory `/home/runner/.pub-cache/hosted/pub.dev/fvp-0.33.1/android/.cxx/RelWithDebInfo/5v291nz4/x86_64'
+[1/3] Building CXX object CMakeFiles/fvp_plugin.dir/fvp_plugin.cpp.o
+[2/3] Building CXX object CMakeFiles/fvp_plugin.dir/home/runner/.pub-cache/hosted/pub.dev/fvp-0.33.1/lib/src/callbacks.cpp.o
+[3/3] Linking CXX shared library /home/runner/work/LoliSnatcher_Droidtest/LoliSnatcher_Droidtest/build/fvp/intermediates/cxx/RelWithDebInfo/5v291nz4/obj/x86_64/libfvp_plugin.so

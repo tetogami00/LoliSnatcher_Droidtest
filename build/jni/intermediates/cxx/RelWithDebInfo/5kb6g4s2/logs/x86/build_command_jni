@@ -1,0 +1,4 @@
+/usr/local/lib/android/sdk/cmake/3.22.1/bin/ninja \
+  -C \
+  /home/runner/.pub-cache/hosted/pub.dev/jni-0.14.2/android/.cxx/RelWithDebInfo/5kb6g4s2/x86 \
+  jni

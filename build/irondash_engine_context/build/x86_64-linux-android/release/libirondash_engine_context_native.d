@@ -1,0 +1,1 @@
+/home/runner/work/LoliSnatcher_Droidtest/LoliSnatcher_Droidtest/build/irondash_engine_context/build/x86_64-linux-android/release/libirondash_engine_context_native.so: /home/runner/.pub-cache/hosted/pub.dev/irondash_engine_context-0.5.5/android/rust/src/jni_sys.rs /home/runner/.pub-cache/hosted/pub.dev/irondash_engine_context-0.5.5/android/rust/src/lib.rs

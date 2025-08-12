@@ -1,0 +1,10 @@
+/home/runner/work/LoliSnatcher_Droidtest/LoliSnatcher_Droidtest/build/super_native_extensions/build/release/deps/version_check-5239bc292bc99cb3.d: /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.4/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.4/src/version.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.4/src/channel.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.4/src/date.rs
+
+/home/runner/work/LoliSnatcher_Droidtest/LoliSnatcher_Droidtest/build/super_native_extensions/build/release/deps/libversion_check-5239bc292bc99cb3.rlib: /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.4/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.4/src/version.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.4/src/channel.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.4/src/date.rs
+
+/home/runner/work/LoliSnatcher_Droidtest/LoliSnatcher_Droidtest/build/super_native_extensions/build/release/deps/libversion_check-5239bc292bc99cb3.rmeta: /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.4/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.4/src/version.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.4/src/channel.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.4/src/date.rs
+
+/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.4/src/lib.rs:
+/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.4/src/version.rs:
+/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.4/src/channel.rs:
+/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/version_check-0.9.4/src/date.rs:

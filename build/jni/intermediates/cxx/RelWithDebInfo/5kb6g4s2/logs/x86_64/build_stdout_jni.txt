@@ -1,0 +1,5 @@
+ninja: Entering directory `/home/runner/.pub-cache/hosted/pub.dev/jni-0.14.2/android/.cxx/RelWithDebInfo/5kb6g4s2/x86_64'
+[1/4] Building C object CMakeFiles/jni.dir/include/dart_api_dl.c.o
+[2/4] Building C object CMakeFiles/jni.dir/dartjni.c.o
+[3/4] Building C object CMakeFiles/jni.dir/third_party/global_jni_env.c.o
+[4/4] Linking C shared library /home/runner/work/LoliSnatcher_Droidtest/LoliSnatcher_Droidtest/build/jni/intermediates/cxx/RelWithDebInfo/5kb6g4s2/obj/x86_64/libdartjni.so

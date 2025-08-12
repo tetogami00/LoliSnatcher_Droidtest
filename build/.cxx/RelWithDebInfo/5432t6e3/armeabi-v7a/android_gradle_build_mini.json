@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/home/runner/fvm/versions/3.32.8/packages/flutter_tools/gradle/src/main/scripts/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/usr/local/lib/android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/home/runner/work/LoliSnatcher_Droidtest/LoliSnatcher_Droidtest/build/.cxx/RelWithDebInfo/5432t6e3/armeabi-v7a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/usr/local/lib/android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/home/runner/work/LoliSnatcher_Droidtest/LoliSnatcher_Droidtest/build/.cxx/RelWithDebInfo/5432t6e3/armeabi-v7a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

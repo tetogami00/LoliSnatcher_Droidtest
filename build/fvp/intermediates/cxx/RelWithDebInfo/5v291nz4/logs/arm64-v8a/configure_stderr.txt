@@ -1,0 +1,3 @@
+FVP_DEPS_LATEST=
+Downloading mdk-sdk from https://sourceforge.net/projects/mdk-sdk/files/nightly/mdk-sdk-android.7z
+MDK_SDK_MD5_SAVE: 402a6bd1cef31d074c36e1ba59087a3d

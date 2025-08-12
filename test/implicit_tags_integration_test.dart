@@ -1,30 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lolisnatcher/src/boorus/booru_type.dart';
 import 'package:lolisnatcher/src/data/booru.dart';
-import 'package:lolisnatcher/src/handlers/search_handler.dart';
 
 void main() {
   group('Implicit Tags Integration Tests', () {
     test('SearchHandler combines visible tags with implicit tags correctly', () {
-      // Create a test booru with implicit tags
-      final booru = Booru(
-        'test_booru',
-        BooruType.Gelbooru,
-        '',
-        'https://test.example.com',
-        '',
-        'order:score rating:safe', // implicit tags
-      );
-
-      final searchHandler = SearchHandler();
-
       // Test the helper function via reflection (accessing private method)
       // In a real scenario, this would be tested through integration
       final testCases = [
         {
           'visible': 'cat girl',
           'implicit': 'order:score rating:safe',
-          'expected': 'cat girl order:score rating:safe',
+          'expected': 'order:score rating:safe cat girl',
         },
         {
           'visible': '',
@@ -45,11 +32,11 @@ void main() {
 
       for (final testCase in testCases) {
         // For testing purposes, we'll verify the logic matches our expectations
-        final visibleTags = testCase['visible'] as String;
-        final implicitTags = testCase['implicit'] as String;
-        final expectedResult = testCase['expected'] as String;
+        final visibleTags = testCase['visible']!;
+        final implicitTags = testCase['implicit']!;
+        final expectedResult = testCase['expected']!;
 
-        // Test the combination logic
+        // Test the combination logic (implicit tags now come first)
         String result;
         if (implicitTags.trim().isEmpty) {
           result = visibleTags;
@@ -58,7 +45,7 @@ void main() {
         } else if (implicitTags.trim().isEmpty) {
           result = visibleTags;
         } else {
-          result = '${visibleTags.trim()} ${implicitTags.trim()}';
+          result = '${implicitTags.trim()} ${visibleTags.trim()}';
         }
 
         expect(result, equals(expectedResult), reason: 'Failed for visible: "$visibleTags", implicit: "$implicitTags"');

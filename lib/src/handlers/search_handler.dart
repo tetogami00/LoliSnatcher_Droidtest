@@ -673,6 +673,7 @@ class SearchHandler {
 
   /// Combines visible tags with implicit tags from the booru
   /// Returns the combined tag string for search
+  /// Implicit tags are placed before visible tags for proper search processing
   String _combineTagsWithImplicit(String visibleTags, String? implicitTags) {
     if (implicitTags == null || implicitTags.trim().isEmpty) {
       return visibleTags;
@@ -691,7 +692,8 @@ class SearchHandler {
 
     // For Hydrus, tags are comma-separated, for others they're space-separated
     final String separator = currentBooru.type?.isHydrus == true ? ', ' : ' ';
-    return '$cleanVisibleTags$separator$cleanImplicitTags';
+    // Put implicit tags first so that ordering/filtering tags are processed before content tags
+    return '$cleanImplicitTags$separator$cleanVisibleTags';
   }
 
   void dispose() {

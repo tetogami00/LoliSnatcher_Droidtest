@@ -21,14 +21,14 @@ All APK files are under 100MB and ready to use:
 The Store build AAB file was 114MB, exceeding GitHub's 100MB file size limit, so it has been split into parts:
 
 ### Store Build (Play Store ready)
-- `LoliSnatcher_2.4.4_4202_appbundle_store.z01` (90MB) - Part 1 of split archive
-- `LoliSnatcher_2.4.4_4202_appbundle_store.zip` (23MB) - Part 2 of split archive
+- `LoliSnatcher_2.4.4_4202_appbundle_store.aab.partaa` (90MB) - Part 1 of split file
+- `LoliSnatcher_2.4.4_4202_appbundle_store.aab.partab` (24MB) - Part 2 of split file
 
 #### To reconstruct the AAB file:
 ```bash
-# Extract the split archive (requires both files in same directory)
-unzip LoliSnatcher_2.4.4_4202_appbundle_store.zip
-# This will recreate: LoliSnatcher_2.4.4_4202_appbundle_store.aab
+# Combine the split files (requires both files in same directory)
+cat LoliSnatcher_2.4.4_4202_appbundle_store.aab.part* > LoliSnatcher_2.4.4_4202_appbundle_store.aab
+# This will recreate the original AAB file for Play Store upload
 ```
 
 ## Installation Instructions

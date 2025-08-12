@@ -54,4 +54,7 @@
 /shortcuts/
 Notes.txt
 
+# Build outputs (temporary)
+/build/
+
 flutter.tar.xz

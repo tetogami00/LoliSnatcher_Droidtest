@@ -28,6 +28,8 @@ import 'package:lolisnatcher/src/handlers/snatch_handler.dart';
 import 'package:lolisnatcher/src/handlers/tag_handler.dart';
 import 'package:lolisnatcher/src/handlers/theme_handler.dart';
 import 'package:lolisnatcher/src/handlers/viewer_handler.dart';
+import 'package:lolisnatcher/src/handlers/input_handler.dart';
+import 'package:lolisnatcher/src/services/action_service.dart';
 import 'package:lolisnatcher/src/pages/desktop_home_page.dart';
 import 'package:lolisnatcher/src/pages/init_home_page.dart';
 import 'package:lolisnatcher/src/pages/lockscreen_page.dart';
@@ -71,6 +73,8 @@ void main() async {
   SecureStorageHandler.register();
   await SettingsHandler.register().initialize();
   LocalAuthHandler.register();
+  InputHandler.register();
+  ActionService.register();
 
   await ServiceHandler.setSystemUiVisibility(true);
 
@@ -110,6 +114,13 @@ class _MainAppState extends State<MainApp> {
       await tagHandler.initialize();
       settingsHandler.postInitMessage.value = 'Restoring tabs...';
       await searchHandler.restoreTabs();
+      
+      // Initialize input handler for Quest 3 controller support
+      if (SettingsHandler.isDesktopPlatform) {
+        settingsHandler.postInitMessage.value = 'Initializing input handler...';
+        await InputHandler.instance.initialize();
+        ActionService.instance.initialize();
+      }
     });
 
     settingsHandler.isDebug.addListener(devOverlayListener);
@@ -148,6 +159,12 @@ class _MainAppState extends State<MainApp> {
   @override
   void dispose() {
     settingsHandler.isDebug.removeListener(devOverlayListener);
+    if (SettingsHandler.isDesktopPlatform) {
+      ActionService.instance.dispose();
+      ActionService.unregister();
+      InputHandler.instance.dispose();
+      InputHandler.unregister();
+    }
     NotifyHandler.unregister();
     NavigationHandler.unregister();
     ViewerHandler.unregister();

@@ -207,6 +207,9 @@ class SettingsHandler {
   final RxBool useLockscreen = false.obs;
   final RxBool blurOnLeave = false.obs;
   final RxList<Booru> booruList = RxList<Booru>([]);
+  
+  // Keybind configuration for Quest 3 controller support
+  Map<String, dynamic> keybindConfig = {};
   ////////////////////////////////////////////////////
 
   // themes wip
@@ -1160,6 +1163,8 @@ class SettingsHandler {
         return useLockscreen;
       case 'blurOnLeave':
         return blurOnLeave;
+      case 'keybindConfig':
+        return keybindConfig;
 
       case 'prefBooru':
         return prefBooru;
@@ -1493,6 +1498,9 @@ class SettingsHandler {
       case 'blurOnLeave':
         blurOnLeave.value = validatedValue;
         break;
+      case 'keybindConfig':
+        keybindConfig = validatedValue ?? {};
+        break;
 
       // theme stuff
       case 'appMode':
@@ -1601,6 +1609,7 @@ class SettingsHandler {
       'expandDetails': validateValue('expandDetails', null, toJSON: true),
       'useLockscreen': validateValue('useLockscreen', null, toJSON: true),
       'blurOnLeave': validateValue('blurOnLeave', null, toJSON: true),
+      'keybindConfig': keybindConfig,
 
       'buttonOrder': validateValue('buttonOrder', null, toJSON: true),
       'disabledButtons': validateValue('disabledButtons', null, toJSON: true),

@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:lolisnatcher/src/data/settings/app_mode.dart';
 import 'package:lolisnatcher/src/data/settings/hand_side.dart';
 import 'package:lolisnatcher/src/handlers/settings_handler.dart';
+import 'package:lolisnatcher/src/pages/settings/keybind_settings_page.dart';
 import 'package:lolisnatcher/src/widgets/common/cancel_button.dart';
 import 'package:lolisnatcher/src/widgets/common/confirm_button.dart';
 import 'package:lolisnatcher/src/widgets/common/settings_widgets.dart';
@@ -484,6 +485,13 @@ class _UserInterfacePageState extends State<UserInterfacePage> {
                       return null;
                     }
                   },
+                ),
+              if (SettingsHandler.isDesktopPlatform)
+                SettingsButton(
+                  name: 'Keyboard & Controller Settings',
+                  icon: const Icon(Icons.gamepad),
+                  subtitle: const Text('Configure keybinds for Quest 3 controller support'),
+                  page: () => const KeybindSettingsPage(),
                 ),
             ],
           ),

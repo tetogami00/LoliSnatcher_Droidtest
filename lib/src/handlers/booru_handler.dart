@@ -9,6 +9,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:get/get.dart' hide Response;
 import 'package:html/parser.dart';
 
+import 'package:lolisnatcher/src/data/blacklisted_tag_stats.dart';
 import 'package:lolisnatcher/src/data/booru.dart';
 import 'package:lolisnatcher/src/data/booru_item.dart';
 import 'package:lolisnatcher/src/data/comment_item.dart';
@@ -45,6 +46,9 @@ abstract class BooruHandler {
   RxList<BooruItem> fetched = RxList<BooruItem>([]);
   RxList<BooruItem> filteredFetched = RxList<BooruItem>([]);
 
+  /// Statistics about blacklisted tags that have been filtered out
+  final BlacklistedTagStats blacklistedTagStats = BlacklistedTagStats();
+
   /// Filters the list of fetched items and stores them in filteredFetched
   ///
   /// Should always be called after fetched changed (so don't forget to add it in custom afterParseResponse or search methods)
@@ -57,7 +61,16 @@ abstract class BooruHandler {
     final List<BooruItem> filteredItems = [];
     for (final item in fetched) {
       if (settingsHandler.filterHated && item.isHated) {
-        continue;
+        // Track which hated tags caused this item to be filtered
+        final List<String> hatedTagsInItem = settingsHandler.hatedTags
+            .where((tag) => !blacklistedTagStats.isTagTemporarilyDisabled(tag))
+            .where(item.tagsList.contains)
+            .toList();
+        
+        if (hatedTagsInItem.isNotEmpty) {
+          blacklistedTagStats.addFilteredItem(item, hatedTagsInItem);
+          continue;
+        }
       }
 
       if (settingsHandler.filterAi && item.isAI) {
@@ -82,6 +95,14 @@ abstract class BooruHandler {
       }
 
       filteredItems.add(item);
+    }
+
+    // Add back items that should be visible due to temporarily disabled tags
+    final List<BooruItem> itemsToReAdd = blacklistedTagStats.getItemsToReAdd();
+    for (final item in itemsToReAdd) {
+      if (!filteredItems.contains(item)) {
+        filteredItems.add(item);
+      }
     }
 
     if (!listEquals(itemsBeforeFilter, filteredItems)) {
@@ -132,6 +153,7 @@ abstract class BooruHandler {
     if (prevTags != tags) {
       fetched.value = [];
       totalCount.value = 0;
+      blacklistedTagStats.clear();
     }
 
     // get amount of items before fetching

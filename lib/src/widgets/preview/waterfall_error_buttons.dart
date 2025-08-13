@@ -10,6 +10,7 @@ import 'package:lolisnatcher/src/handlers/search_handler.dart';
 import 'package:lolisnatcher/src/handlers/settings_handler.dart';
 import 'package:lolisnatcher/src/utils/tools.dart';
 import 'package:lolisnatcher/src/widgets/common/html.dart';
+import 'package:lolisnatcher/src/widgets/preview/blacklisted_tag_stats_widget.dart';
 
 class WaterfallErrorButtons extends StatefulWidget {
   const WaterfallErrorButtons({
@@ -149,7 +150,26 @@ class _WaterfallErrorButtonsState extends State<WaterfallErrorButtons> {
           title = 'Error, no results loaded';
           subtitle = 'Tap here to retry';
         } else {
-          // return const SizedBox.shrink();
+          // Check if we have blacklisted tag stats to show
+          final blacklistedStats = searchHandler.currentTab.booruHandler.blacklistedTagStats;
+          if (blacklistedStats.hasStats) {
+            // Show blacklisted tag stats when we have successful results but some items were filtered
+            return AnimatedBuilder(
+              animation: widget.animation,
+              builder: (context, child) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    BlacklistedTagStatsWidget(stats: blacklistedStats),
+                    Container(
+                      height: MediaQuery.systemGestureInsetsOf(context).bottom,
+                      color: Colors.transparent,
+                    ),
+                  ],
+                );
+              },
+            );
+          }
 
           // add a small container to avoid scrolling when swiping from the bottom of the screen (navigation gestures)
           return AnimatedBuilder(

@@ -9,6 +9,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:get/get.dart' hide Response;
 import 'package:html/parser.dart';
 
+import 'package:lolisnatcher/src/data/blacklisted_tag_stats.dart';
 import 'package:lolisnatcher/src/data/booru.dart';
 import 'package:lolisnatcher/src/data/booru_item.dart';
 import 'package:lolisnatcher/src/data/comment_item.dart';
@@ -45,6 +46,9 @@ abstract class BooruHandler {
   RxList<BooruItem> fetched = RxList<BooruItem>([]);
   RxList<BooruItem> filteredFetched = RxList<BooruItem>([]);
 
+  /// Statistics about blacklisted tags that have been filtered out
+  final BlacklistedTagStats blacklistedTagStats = BlacklistedTagStats();
+
   /// Filters the list of fetched items and stores them in filteredFetched
   ///
   /// Should always be called after fetched changed (so don't forget to add it in custom afterParseResponse or search methods)
@@ -56,7 +60,30 @@ abstract class BooruHandler {
 
     final List<BooruItem> filteredItems = [];
     for (final item in fetched) {
+      bool shouldFilter = false;
+      
       if (settingsHandler.filterHated && item.isHated) {
+        // Get all hated tags in this item
+        final List<String> allHatedTagsInItem = settingsHandler.hatedTags
+            .where(item.tagsList.contains)
+            .toList();
+        
+        // Track statistics for all hated tags
+        if (allHatedTagsInItem.isNotEmpty) {
+          blacklistedTagStats.addFilteredItem(item, allHatedTagsInItem);
+        }
+        
+        // Only filter if there are hated tags that are NOT temporarily disabled
+        final List<String> activeHatedTags = allHatedTagsInItem
+            .where((tag) => !blacklistedTagStats.isTagTemporarilyDisabled(tag))
+            .toList();
+            
+        if (activeHatedTags.isNotEmpty) {
+          shouldFilter = true;
+        }
+      }
+      
+      if (shouldFilter) {
         continue;
       }
 
@@ -132,6 +159,7 @@ abstract class BooruHandler {
     if (prevTags != tags) {
       fetched.value = [];
       totalCount.value = 0;
+      blacklistedTagStats.clear();
     }
 
     // get amount of items before fetching

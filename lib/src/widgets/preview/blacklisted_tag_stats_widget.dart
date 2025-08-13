@@ -7,14 +7,16 @@ import 'package:lolisnatcher/src/handlers/search_handler.dart';
 class BlacklistedTagStatsWidget extends StatelessWidget {
   const BlacklistedTagStatsWidget({
     required this.stats,
+    this.onTagTap,
     super.key,
   });
 
   final BlacklistedTagStats stats;
+  final void Function(String tag)? onTagTap;
 
   SearchHandler get searchHandler => SearchHandler.instance;
 
-  void onTagTap(String tag) {
+  void defaultOnTagTap(String tag) {
     // Toggle the temporarily disabled state for this tag
     if (stats.isTagTemporarilyDisabled(tag)) {
       stats.reEnableTag(tag);
@@ -24,6 +26,14 @@ class BlacklistedTagStatsWidget extends StatelessWidget {
     
     // Refresh the current results to show/hide items based on the new state
     searchHandler.currentTab.booruHandler.filterFetched();
+  }
+
+  void handleTagTap(String tag) {
+    if (onTagTap != null) {
+      onTagTap!(tag);
+    } else {
+      defaultOnTagTap(tag);
+    }
   }
 
   @override
@@ -75,7 +85,7 @@ class BlacklistedTagStatsWidget extends StatelessWidget {
               final bool isDisabled = stats.isTagTemporarilyDisabled(tag);
               
               return GestureDetector(
-                onTap: () => onTagTap(tag),
+                onTap: () => handleTagTap(tag),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(

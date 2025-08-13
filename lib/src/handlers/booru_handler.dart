@@ -60,17 +60,31 @@ abstract class BooruHandler {
 
     final List<BooruItem> filteredItems = [];
     for (final item in fetched) {
+      bool shouldFilter = false;
+      
       if (settingsHandler.filterHated && item.isHated) {
-        // Track which hated tags caused this item to be filtered
-        final List<String> hatedTagsInItem = settingsHandler.hatedTags
-            .where((tag) => !blacklistedTagStats.isTagTemporarilyDisabled(tag))
+        // Get all hated tags in this item
+        final List<String> allHatedTagsInItem = settingsHandler.hatedTags
             .where(item.tagsList.contains)
             .toList();
         
-        if (hatedTagsInItem.isNotEmpty) {
-          blacklistedTagStats.addFilteredItem(item, hatedTagsInItem);
-          continue;
+        // Track statistics for all hated tags
+        if (allHatedTagsInItem.isNotEmpty) {
+          blacklistedTagStats.addFilteredItem(item, allHatedTagsInItem);
         }
+        
+        // Only filter if there are hated tags that are NOT temporarily disabled
+        final List<String> activeHatedTags = allHatedTagsInItem
+            .where((tag) => !blacklistedTagStats.isTagTemporarilyDisabled(tag))
+            .toList();
+            
+        if (activeHatedTags.isNotEmpty) {
+          shouldFilter = true;
+        }
+      }
+      
+      if (shouldFilter) {
+        continue;
       }
 
       if (settingsHandler.filterAi && item.isAI) {
@@ -95,14 +109,6 @@ abstract class BooruHandler {
       }
 
       filteredItems.add(item);
-    }
-
-    // Add back items that should be visible due to temporarily disabled tags
-    final List<BooruItem> itemsToReAdd = blacklistedTagStats.getItemsToReAdd();
-    for (final item in itemsToReAdd) {
-      if (!filteredItems.contains(item)) {
-        filteredItems.add(item);
-      }
     }
 
     if (!listEquals(itemsBeforeFilter, filteredItems)) {

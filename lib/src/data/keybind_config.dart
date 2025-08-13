@@ -11,12 +11,6 @@ class KeyCombination {
     this.isMeta = false,
   });
 
-  final LogicalKeyboardKey key;
-  final bool isControl;
-  final bool isShift;
-  final bool isAlt;
-  final bool isMeta;
-
   /// Create from a key event
   factory KeyCombination.fromKeyEvent(KeyEvent event) {
     return KeyCombination(
@@ -27,6 +21,12 @@ class KeyCombination {
       isMeta: HardwareKeyboard.instance.isMetaPressed,
     );
   }
+
+  final LogicalKeyboardKey key;
+  final bool isControl;
+  final bool isShift;
+  final bool isAlt;
+  final bool isMeta;
 
   /// Create from a JSON map
   factory KeyCombination.fromJson(Map<String, dynamic> json) {
@@ -152,6 +152,28 @@ class KeybindConfig {
     Map<KeybindAction, KeyCombination>? bindings,
   }) : _bindings = bindings ?? _createDefaultBindings();
 
+  /// Create from JSON
+  factory KeybindConfig.fromJson(Map<String, dynamic> json) {
+    final Map<KeybindAction, KeyCombination> bindings = {};
+    
+    for (final entry in json.entries) {
+      final actionName = entry.key;
+      final combinationData = entry.value as Map<String, dynamic>;
+      
+      // Find the action by name
+      final action = KeybindAction.values.cast<KeybindAction?>().firstWhere(
+        (a) => a?.name == actionName,
+        orElse: () => null,
+      );
+      
+      if (action != null) {
+        bindings[action] = KeyCombination.fromJson(combinationData);
+      }
+    }
+    
+    return KeybindConfig(bindings: bindings);
+  }
+
   final Map<KeybindAction, KeyCombination> _bindings;
 
   /// Get all configured bindings
@@ -204,28 +226,6 @@ class KeybindConfig {
       result[entry.key.name] = entry.value.toJson();
     }
     return result;
-  }
-
-  /// Create from JSON
-  factory KeybindConfig.fromJson(Map<String, dynamic> json) {
-    final Map<KeybindAction, KeyCombination> bindings = {};
-    
-    for (final entry in json.entries) {
-      final actionName = entry.key;
-      final combinationData = entry.value as Map<String, dynamic>;
-      
-      // Find the action by name
-      final action = KeybindAction.values.cast<KeybindAction?>().firstWhere(
-        (a) => a?.name == actionName,
-        orElse: () => null,
-      );
-      
-      if (action != null) {
-        bindings[action] = KeyCombination.fromJson(combinationData);
-      }
-    }
-    
-    return KeybindConfig(bindings: bindings);
   }
 
   /// Create default keybind mappings

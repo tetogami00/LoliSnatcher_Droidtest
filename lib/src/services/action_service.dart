@@ -214,10 +214,10 @@ class ActionService {
   }
 
   void _handleSelectAll() {
-    if (_searchHandler.currentTab.booruItems.isNotEmpty) {
+    if (_searchHandler.currentFetched.isNotEmpty) {
       // Clear current selection and add all items
       _searchHandler.currentTab.selected.clear();
-      _searchHandler.currentTab.selected.addAll(_searchHandler.currentTab.booruItems);
+      _searchHandler.currentTab.selected.addAll(_searchHandler.currentFetched);
       
       final context = _navigationHandler.navigatorKey.currentContext;
       if (context != null) {

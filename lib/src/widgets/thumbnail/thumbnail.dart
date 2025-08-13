@@ -14,6 +14,7 @@ import 'package:lolisnatcher/src/data/booru.dart';
 import 'package:lolisnatcher/src/data/booru_item.dart';
 import 'package:lolisnatcher/src/handlers/booru_handler_factory.dart';
 import 'package:lolisnatcher/src/handlers/database_handler.dart';
+import 'package:lolisnatcher/src/handlers/search_handler.dart';
 import 'package:lolisnatcher/src/handlers/settings_handler.dart';
 import 'package:lolisnatcher/src/utils/debouncer.dart';
 import 'package:lolisnatcher/src/utils/extensions.dart';
@@ -48,6 +49,52 @@ class _ThumbnailState extends State<Thumbnail> {
 
   final ValueNotifier<int> total = ValueNotifier(0), received = ValueNotifier(0), startedAt = ValueNotifier(0);
   int restartedCount = 0;
+
+  /// Check if the item should be blurred considering temporarily disabled tags
+  bool shouldBlurImage({bool respectShitDevice = false}) {
+    // Always blur if the global blur setting is enabled
+    if (settingsHandler.blurImages) {
+      return true;
+    }
+    
+    // If the item is not hated, no need to blur
+    if (!widget.item.isHated) {
+      return false;
+    }
+    
+    // If respectShitDevice is true and shitDevice is enabled, don't blur hated items
+    if (respectShitDevice && settingsHandler.shitDevice) {
+      return false;
+    }
+    
+    // Check if all hated tags in this item are temporarily disabled
+    try {
+      final searchHandler = SearchHandler.instance;
+      final currentTab = searchHandler.currentTab;
+      final blacklistedTagStats = currentTab.booruHandler.blacklistedTagStats;
+      
+      // Get all hated tags in this item
+      final List<String> hatedTagsInItem = settingsHandler.hatedTags
+          .where(widget.item.tagsList.contains)
+          .toList();
+      
+      // If there are no hated tags, don't blur (shouldn't happen if isHated is true, but safety check)
+      if (hatedTagsInItem.isEmpty) {
+        return false;
+      }
+      
+      // Check if ALL hated tags are temporarily disabled
+      final bool allHatedTagsDisabled = hatedTagsInItem.every(
+        blacklistedTagStats.isTagTemporarilyDisabled,
+      );
+      
+      // Only blur if not all hated tags are disabled
+      return !allHatedTagsDisabled;
+    } catch (e) {
+      // Fallback to original behavior if there's any error accessing the stats
+      return widget.item.isHated;
+    }
+  }
   final ValueNotifier<bool?> isFromCache = ValueNotifier(null);
   final ValueNotifier<bool> isFirstBuild = ValueNotifier(true);
   final ValueNotifier<bool> isFailed = ValueNotifier(false);
@@ -467,7 +514,7 @@ class _ThumbnailState extends State<Thumbnail> {
                 child: AnimatedSwitcher(
                   duration: Duration(milliseconds: widget.isStandalone ? 100 : 0),
                   child: ImageFiltered(
-                    enabled: settingsHandler.blurImages || widget.item.isHated,
+                    enabled: shouldBlurImage(),
                     imageFilter: ImageFilter.blur(
                       sigmaX: (settingsHandler.blurImages && !widget.isStandalone) ? 30 : 10,
                       sigmaY: (settingsHandler.blurImages && !widget.isStandalone) ? 30 : 10,
@@ -514,7 +561,7 @@ class _ThumbnailState extends State<Thumbnail> {
               child: AnimatedSwitcher(
                 duration: Duration(milliseconds: widget.isStandalone ? 200 : 0),
                 child: ImageFiltered(
-                  enabled: settingsHandler.blurImages || (widget.item.isHated && !settingsHandler.shitDevice),
+                  enabled: shouldBlurImage(respectShitDevice: true),
                   imageFilter: ImageFilter.blur(
                     sigmaX: (settingsHandler.blurImages && !widget.isStandalone) ? 30 : 10,
                     sigmaY: (settingsHandler.blurImages && !widget.isStandalone) ? 30 : 10,

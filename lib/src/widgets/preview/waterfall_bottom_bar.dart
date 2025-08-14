@@ -40,6 +40,7 @@ import 'package:lolisnatcher/src/widgets/gallery/tag_view.dart';
 import 'package:lolisnatcher/src/widgets/history/history.dart';
 import 'package:lolisnatcher/src/widgets/image/booru_favicon.dart';
 import 'package:lolisnatcher/src/widgets/preview/waterfall_error_buttons.dart';
+import 'package:lolisnatcher/src/widgets/search/custom_search_buttons.dart';
 
 // all the scroll stuff is just experiments,
 
@@ -1840,6 +1841,8 @@ class _SearchQueryEditorPageState extends State<SearchQueryEditorPage> {
           ),
         ),
       ),
+      // Custom search buttons
+      const CustomSearchButtons(),
       // Suggestions text input
       KeyboardActions(
         enable: settingsHandler.showSearchbarQuickActions && (Platform.isAndroid || Platform.isIOS),

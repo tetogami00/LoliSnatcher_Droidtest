@@ -116,7 +116,8 @@ class _MainAppState extends State<MainApp> {
       await searchHandler.restoreTabs();
       
       // Initialize input handler for Quest 3 controller support
-      if (SettingsHandler.isDesktopPlatform) {
+      // Now available on both desktop and Android platforms
+      if (SettingsHandler.isDesktopPlatform || Platform.isAndroid) {
         settingsHandler.postInitMessage.value = 'Initializing input handler...';
         await InputHandler.instance.initialize();
         ActionService.instance.initialize();

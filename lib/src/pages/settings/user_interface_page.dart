@@ -9,6 +9,7 @@ import 'package:lolisnatcher/src/data/settings/app_mode.dart';
 import 'package:lolisnatcher/src/data/settings/hand_side.dart';
 import 'package:lolisnatcher/src/handlers/settings_handler.dart';
 import 'package:lolisnatcher/src/pages/settings/keybind_settings_page.dart';
+import 'package:lolisnatcher/src/pages/settings/custom_search_buttons_page.dart';
 import 'package:lolisnatcher/src/widgets/common/cancel_button.dart';
 import 'package:lolisnatcher/src/widgets/common/confirm_button.dart';
 import 'package:lolisnatcher/src/widgets/common/settings_widgets.dart';
@@ -98,11 +99,8 @@ class _UserInterfacePageState extends State<UserInterfacePage> {
         body: Center(
           child: ListView(
             children: [
-              // TODO disabled for now, until we rework desktop ui
-              // mobile mode only for now (force enabled on settings init)
-              if (false)
-                // ignore: dead_code
-                SettingsOptionsList(
+              // App UI Mode Toggle - now enabled for Quest 3 controller support
+              SettingsOptionsList(
                   value: appMode,
                   items: AppMode.values,
                   onChanged: (AppMode? newValue) async {
@@ -493,6 +491,12 @@ class _UserInterfacePageState extends State<UserInterfacePage> {
                   subtitle: const Text('Configure keybinds for Quest 3 controller support'),
                   page: () => const KeybindSettingsPage(),
                 ),
+              SettingsButton(
+                name: 'Custom Search Buttons',
+                icon: const Icon(Icons.smart_button),
+                subtitle: const Text('Create custom buttons for quick search filters'),
+                page: () => const CustomSearchButtonsPage(),
+              ),
             ],
           ),
         ),

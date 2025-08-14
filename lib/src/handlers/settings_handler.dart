@@ -210,6 +210,9 @@ class SettingsHandler {
   
   // Keybind configuration for Quest 3 controller support
   Map<String, dynamic> keybindConfig = {};
+  
+  // Custom search buttons configuration  
+  List<Map<String, String>> customSearchButtons = [];
   ////////////////////////////////////////////////////
 
   // themes wip
@@ -1165,6 +1168,8 @@ class SettingsHandler {
         return blurOnLeave;
       case 'keybindConfig':
         return keybindConfig;
+      case 'customSearchButtons':
+        return customSearchButtons;
 
       case 'prefBooru':
         return prefBooru;
@@ -1501,6 +1506,9 @@ class SettingsHandler {
       case 'keybindConfig':
         keybindConfig = validatedValue ?? {};
         break;
+      case 'customSearchButtons':
+        customSearchButtons = (validatedValue as List<dynamic>?)?.cast<Map<String, dynamic>>().map((item) => Map<String, String>.from(item)).toList() ?? [];
+        break;
 
       // theme stuff
       case 'appMode':
@@ -1610,6 +1618,7 @@ class SettingsHandler {
       'useLockscreen': validateValue('useLockscreen', null, toJSON: true),
       'blurOnLeave': validateValue('blurOnLeave', null, toJSON: true),
       'keybindConfig': keybindConfig,
+      'customSearchButtons': customSearchButtons,
 
       'buttonOrder': validateValue('buttonOrder', null, toJSON: true),
       'disabledButtons': validateValue('disabledButtons', null, toJSON: true),

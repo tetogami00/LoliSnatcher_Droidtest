@@ -1282,22 +1282,20 @@ class _TabManagerPageState extends State<TabManagerPage> {
                   scrollbarOrientation: settingsHandler.handSide.value.isLeft
                       ? ScrollbarOrientation.left
                       : ScrollbarOrientation.right,
-                  child: DesktopScrollWrap(
-                    controller: scrollController,
-                    child: ReorderableListView.builder(
-                      scrollController: scrollController,
-                      itemExtent: tabHeight,
-                      onReorder: (oldIndex, newIndex) {
-                        if (oldIndex == newIndex) {
-                          return;
-                        } else if (oldIndex < newIndex) {
-                          newIndex -= 1;
-                        }
+                  child: ReorderableListView.builder(
+                    scrollController: scrollController,
+                    itemExtent: tabHeight,
+                    onReorder: (oldIndex, newIndex) {
+                      if (oldIndex == newIndex) {
+                        return;
+                      } else if (oldIndex < newIndex) {
+                        newIndex -= 1;
+                      }
 
-                        searchHandler.moveTab(oldIndex, newIndex);
-                        getTabs();
-                      },
-                      physics: getListPhysics(),
+                      searchHandler.moveTab(oldIndex, newIndex);
+                      getTabs();
+                    },
+                    physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                     buildDefaultDragHandles: false,
                     proxyDecorator: proxyDecorator,
                     padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),

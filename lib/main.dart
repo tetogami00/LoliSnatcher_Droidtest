@@ -9,7 +9,6 @@ import 'package:flutter/services.dart';
 import 'package:app_links/app_links.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 import 'package:lemberfpsmonitor/lemberfpsmonitor.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -38,7 +37,6 @@ import 'package:lolisnatcher/src/widgets/common/settings_widgets.dart';
 import 'package:lolisnatcher/src/widgets/root/dev_overlay.dart';
 import 'package:lolisnatcher/src/widgets/root/image_stats.dart';
 import 'package:lolisnatcher/src/widgets/root/scroll_physics.dart';
-import 'package:lolisnatcher/src/widgets/webview/webview_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

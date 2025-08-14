@@ -94,9 +94,6 @@ class _MainAppState extends State<MainApp> {
     searchHandler.setRootRestate(updateState);
     settingsHandler.alice.setNavigatorKey(navigationHandler.navigatorKey);
     
-    // Load keyboard keybinds from settings
-    keyboardHandler.loadKeybinds();
-    
     await settingsHandler.postInit(() async {
       settingsHandler.postInitMessage.value = 'Loading tags...';
       // should init earlier than tabs so tags color properly on first render of search box
@@ -104,6 +101,14 @@ class _MainAppState extends State<MainApp> {
       settingsHandler.postInitMessage.value = 'Restoring tabs...';
       await searchHandler.restoreTabs();
     });
+
+    // Load keyboard keybinds from settings after postInit completes
+    try {
+      keyboardHandler.loadKeybinds();
+    } catch (e) {
+      // If keybind loading fails, continue with defaults
+      print('Failed to load keybinds: $e');
+    }
 
     settingsHandler.isDebug.addListener(devOverlayListener);
   }

@@ -23,7 +23,6 @@ import 'package:lolisnatcher/src/widgets/common/kaomoji.dart';
 import 'package:lolisnatcher/src/widgets/common/loli_dropdown.dart';
 import 'package:lolisnatcher/src/widgets/common/marquee_text.dart';
 import 'package:lolisnatcher/src/widgets/common/settings_widgets.dart';
-import 'package:lolisnatcher/src/widgets/desktop/desktop_scroll_wrap.dart';
 import 'package:lolisnatcher/src/widgets/image/booru_favicon.dart';
 import 'package:lolisnatcher/src/widgets/root/main_appbar.dart';
 import 'package:lolisnatcher/src/widgets/tabs/tab_booru_selector.dart';
@@ -1299,12 +1298,11 @@ class _TabManagerPageState extends State<TabManagerPage> {
                         getTabs();
                       },
                       physics: getListPhysics(),
-                      buildDefaultDragHandles: false,
-                      proxyDecorator: proxyDecorator,
-                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                      itemCount: totalFilteredTabs,
-                      itemBuilder: itemBuilder,
-                    ),
+                    buildDefaultDragHandles: false,
+                    proxyDecorator: proxyDecorator,
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                    itemCount: totalFilteredTabs,
+                    itemBuilder: itemBuilder,
                   ),
                 ),
                 if (totalFilteredTabs == 0)

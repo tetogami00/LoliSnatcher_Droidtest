@@ -486,7 +486,7 @@ class _UserInterfacePageState extends State<UserInterfacePage> {
                     }
                   },
                 ),
-              if (SettingsHandler.isDesktopPlatform)
+              if (SettingsHandler.isDesktopPlatform || Platform.isAndroid)
                 SettingsButton(
                   name: 'Keyboard & Controller Settings',
                   icon: const Icon(Icons.gamepad),

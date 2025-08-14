@@ -176,6 +176,8 @@ class SettingsHandler {
   bool filterSnatched = false;
   bool filterAi = false;
   bool useVolumeButtonsForScroll = false;
+  bool keyboardControlEnabled = true;
+  Map<String, String> customKeybinds = {};
   bool shitDevice = false;
   bool disableVideo = false;
   bool longTapFastForwardVideo = false;
@@ -590,6 +592,14 @@ class SettingsHandler {
     'useVolumeButtonsForScroll': {
       'type': 'bool',
       'default': false,
+    },
+    'keyboardControlEnabled': {
+      'type': 'bool',
+      'default': true,
+    },
+    'customKeybinds': {
+      'type': 'stringMap',
+      'default': <String, String>{},
     },
     'shitDevice': {
       'type': 'bool',
@@ -1102,6 +1112,10 @@ class SettingsHandler {
         return filterAi;
       case 'useVolumeButtonsForScroll':
         return useVolumeButtonsForScroll;
+      case 'keyboardControlEnabled':
+        return keyboardControlEnabled;
+      case 'customKeybinds':
+        return customKeybinds;
       case 'volumeButtonsScrollSpeed':
         return volumeButtonsScrollSpeed;
       case 'mousewheelScrollSpeed':
@@ -1330,6 +1344,12 @@ class SettingsHandler {
       case 'useVolumeButtonsForScroll':
         useVolumeButtonsForScroll = validatedValue;
         break;
+      case 'keyboardControlEnabled':
+        keyboardControlEnabled = validatedValue;
+        break;
+      case 'customKeybinds':
+        customKeybinds = validatedValue;
+        break;
       case 'volumeButtonsScrollSpeed':
         volumeButtonsScrollSpeed = validatedValue;
         break;
@@ -1548,6 +1568,8 @@ class SettingsHandler {
       'filterSnatched': validateValue('filterSnatched', null, toJSON: true),
       'filterAi': validateValue('filterAi', null, toJSON: true),
       'useVolumeButtonsForScroll': validateValue('useVolumeButtonsForScroll', null, toJSON: true),
+      'keyboardControlEnabled': validateValue('keyboardControlEnabled', null, toJSON: true),
+      'customKeybinds': validateValue('customKeybinds', null, toJSON: true),
       'volumeButtonsScrollSpeed': validateValue('volumeButtonsScrollSpeed', null, toJSON: true),
       'mousewheelScrollSpeed': validateValue('mousewheelScrollSpeed', null, toJSON: true),
       'preloadSizeLimit': validateValue('preloadSizeLimit', null, toJSON: true),

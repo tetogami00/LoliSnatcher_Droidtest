@@ -176,12 +176,17 @@ class ViewerHandler {
     }
   }
 
-  void toggleMuteAllVideos({bool mute = true}) {
+  void toggleMuteAllVideos({bool? mute}) {
     for (final key in activeKeys) {
       final state = key?.currentState;
       switch (state?.widget) {
         case VideoViewer():
-          (state as VideoViewerState?)?.videoController.value?.setVolume(mute ? 0 : 1);
+          final controller = (state as VideoViewerState?)?.videoController.value;
+          if (controller != null) {
+            final currentVolume = controller.value.volume;
+            final newVolume = mute ?? (currentVolume > 0) ? 0 : 1;
+            controller.setVolume(newVolume.toDouble());
+          }
           break;
         default:
           break;
@@ -195,6 +200,42 @@ class ViewerHandler {
       switch (state?.widget) {
         case VideoViewer():
           (state as VideoViewerState?)?.videoController.value?.pause();
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
+  void togglePlayPause() {
+    final state = (current.value?.key as GlobalKey?)?.currentState;
+    switch (state?.widget) {
+      case VideoViewer():
+        final controller = (state as VideoViewerState?)?.videoController.value;
+        if (controller != null) {
+          if (controller.value.isPlaying) {
+            controller.pause();
+          } else {
+            controller.play();
+          }
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  void adjustVolume(double delta) {
+    for (final key in activeKeys) {
+      final state = key?.currentState;
+      switch (state?.widget) {
+        case VideoViewer():
+          final controller = (state as VideoViewerState?)?.videoController.value;
+          if (controller != null) {
+            final currentVolume = controller.value.volume;
+            final newVolume = (currentVolume + delta).clamp(0.0, 1.0);
+            controller.setVolume(newVolume);
+          }
           break;
         default:
           break;

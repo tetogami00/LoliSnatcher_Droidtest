@@ -16,6 +16,7 @@ import 'package:lolisnatcher/src/pages/settings/booru_page.dart';
 import 'package:lolisnatcher/src/pages/settings/database_page.dart';
 import 'package:lolisnatcher/src/pages/settings/debug_page.dart';
 import 'package:lolisnatcher/src/pages/settings/gallery_page.dart';
+import 'package:lolisnatcher/src/pages/settings/keyboard_page.dart';
 import 'package:lolisnatcher/src/pages/settings/network_page.dart';
 import 'package:lolisnatcher/src/pages/settings/performance_page.dart';
 import 'package:lolisnatcher/src/pages/settings/privacy_page.dart';
@@ -104,6 +105,11 @@ class SettingsPage extends StatelessWidget {
                 name: 'Video',
                 icon: const Icon(Icons.video_settings),
                 page: () => const VideoSettingsPage(),
+              ),
+              SettingsButton(
+                name: 'Keyboard',
+                icon: const Icon(Icons.keyboard),
+                page: () => const KeyboardSettingsPage(),
               ),
               SettingsButton(
                 name: 'Snatching & Caching',

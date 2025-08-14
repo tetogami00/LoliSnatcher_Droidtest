@@ -13,6 +13,7 @@ import 'package:preload_page_view/preload_page_view.dart';
 import 'package:lolisnatcher/src/boorus/booru_type.dart';
 import 'package:lolisnatcher/src/data/booru_item.dart';
 import 'package:lolisnatcher/src/handlers/navigation_handler.dart';
+import 'package:lolisnatcher/src/handlers/keyboard_handler.dart';
 import 'package:lolisnatcher/src/handlers/search_handler.dart';
 import 'package:lolisnatcher/src/handlers/service_handler.dart';
 import 'package:lolisnatcher/src/handlers/settings_handler.dart';
@@ -52,6 +53,7 @@ class _GalleryViewPageState extends State<GalleryViewPage> with RouteAware {
   final SearchHandler searchHandler = SearchHandler.instance;
   final SnatchHandler snatchHandler = SnatchHandler.instance;
   final ViewerHandler viewerHandler = ViewerHandler.instance;
+  final KeyboardHandler keyboardHandler = KeyboardHandler.instance;
 
   late final PreloadPageController controller;
 
@@ -59,6 +61,7 @@ class _GalleryViewPageState extends State<GalleryViewPage> with RouteAware {
 
   final FocusNode kbFocusNode = FocusNode();
   StreamSubscription? volumeListener;
+  StreamSubscription? keyboardListener;
   final GlobalKey<ScaffoldState> viewerScaffoldKey = GlobalKey<ScaffoldState>();
 
   bool isOpeningAnimation = true;
@@ -82,6 +85,11 @@ class _GalleryViewPageState extends State<GalleryViewPage> with RouteAware {
     final bool isVolumeAllowed = !settingsHandler.useVolumeButtonsForScroll || viewerHandler.displayAppbar.value;
     ServiceHandler.setVolumeButtons(isVolumeAllowed);
     volumeListener = searchHandler.volumeStream?.listen(volumeCallback);
+    
+    // Set up keyboard listener
+    if (settingsHandler.keyboardControlEnabled) {
+      keyboardListener = keyboardHandler.keyboardStream.listen(keyboardCallback);
+    }
 
     final item = widget.tab.booruHandler.filteredFetched[widget.initialIndex];
     viewerHandler.setCurrent(item);
@@ -129,6 +137,7 @@ class _GalleryViewPageState extends State<GalleryViewPage> with RouteAware {
     }
     NavigationHandler.instance.routeObserver.unsubscribe(this);
     volumeListener?.cancel();
+    keyboardListener?.cancel();
     ServiceHandler.setVolumeButtons(!settingsHandler.useVolumeButtonsForScroll);
     kbFocusNode.dispose();
     ServiceHandler.enableSleep();
@@ -155,6 +164,126 @@ class _GalleryViewPageState extends State<GalleryViewPage> with RouteAware {
     }
   }
 
+  void keyboardCallback(KeyboardAction action) {
+    if (!kbFocusNode.hasFocus || !isActive.value) {
+      return;
+    }
+
+    switch (action) {
+      case KeyboardAction.nextPost:
+        final int toPage = page.value + 1;
+        if (toPage < widget.tab.booruHandler.filteredFetched.length) {
+          controller.jumpToPage(toPage);
+        }
+        break;
+      case KeyboardAction.previousPost:
+        final int toPage = page.value - 1;
+        if (toPage >= 0) {
+          controller.jumpToPage(toPage);
+        }
+        break;
+      case KeyboardAction.showInfo:
+        _showPostInfo();
+        break;
+      case KeyboardAction.showTags:
+        _showPostTags();
+        break;
+      default:
+        // Other actions are handled directly by the viewer handler
+        break;
+    }
+  }
+
+  void _showPostInfo() {
+    final item = widget.tab.booruHandler.filteredFetched[page.value];
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Post Information'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (item.fileURL.isNotEmpty) ...[
+                const Text('File URL:', style: TextStyle(fontWeight: FontWeight.bold)),
+                SelectableText(item.fileURL),
+                const SizedBox(height: 8),
+              ],
+              if (item.sampleURL.isNotEmpty) ...[
+                const Text('Sample URL:', style: TextStyle(fontWeight: FontWeight.bold)),
+                SelectableText(item.sampleURL),
+                const SizedBox(height: 8),
+              ],
+              if (item.thumbnailURL.isNotEmpty) ...[
+                const Text('Thumbnail URL:', style: TextStyle(fontWeight: FontWeight.bold)),
+                SelectableText(item.thumbnailURL),
+                const SizedBox(height: 8),
+              ],
+              const Text('Media Type:', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(item.mediaType.value.name),
+              const SizedBox(height: 8),
+              if (item.fileSize != null) ...[
+                const Text('File Size:', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('${item.fileSize} bytes'),
+                const SizedBox(height: 8),
+              ],
+              if (item.fileWidth != null && item.fileHeight != null) ...[
+                const Text('Resolution:', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('${item.fileWidth} x ${item.fileHeight}'),
+                const SizedBox(height: 8),
+              ],
+              if (item.postURL.isNotEmpty) ...[
+                const Text('Post URL:', style: TextStyle(fontWeight: FontWeight.bold)),
+                SelectableText(item.postURL),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPostTags() {
+    final item = widget.tab.booruHandler.filteredFetched[page.value];
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Post Tags'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: item.tagsList.isEmpty
+              ? const Text('No tags available')
+              : ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: item.tagsList.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: SelectableText(
+                        item.tagsList[index],
+                        style: const TextStyle(fontFamily: 'monospace'),
+                      ),
+                    );
+                  },
+                ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final appBar = HideableAppBar(
@@ -168,14 +297,24 @@ class _GalleryViewPageState extends State<GalleryViewPage> with RouteAware {
 
     final double maxDrawerWidth = MediaQuery.sizeOf(context).shortestSide * 0.8;
 
-    return Scaffold(
-      key: viewerScaffoldKey,
-      extendBodyBehindAppBar: true,
-      extendBody: true,
-      resizeToAvoidBottomInset: false,
-      appBar: settingsHandler.galleryBarPosition == 'Top' ? appBar : null,
-      bottomNavigationBar: settingsHandler.galleryBarPosition == 'Bottom' ? appBar : null,
-      backgroundColor: Colors.transparent,
+    return Focus(
+      focusNode: kbFocusNode,
+      onKeyEvent: settingsHandler.keyboardControlEnabled 
+          ? (node, event) {
+              if (keyboardHandler.handleKeyEvent(event)) {
+                return KeyEventResult.handled;
+              }
+              return KeyEventResult.ignored;
+            }
+          : null,
+      child: Scaffold(
+        key: viewerScaffoldKey,
+        extendBodyBehindAppBar: true,
+        extendBody: true,
+        resizeToAvoidBottomInset: false,
+        appBar: settingsHandler.galleryBarPosition == 'Top' ? appBar : null,
+        bottomNavigationBar: settingsHandler.galleryBarPosition == 'Bottom' ? appBar : null,
+        backgroundColor: Colors.transparent,
       body: PhotoViewGestureDetectorScope(
         // vertical to prevent swipe-to-dismiss when zoomed
         // axis: Axis.vertical, // photo_view doesn't support locking both axises, so we use custom fork to fix this
@@ -558,6 +697,7 @@ class _GalleryViewPageState extends State<GalleryViewPage> with RouteAware {
           ),
         ),
       ),
+    ),
     );
   }
 }

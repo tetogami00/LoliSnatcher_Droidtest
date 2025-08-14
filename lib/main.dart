@@ -16,6 +16,7 @@ import 'package:talker_flutter/talker_flutter.dart';
 import 'package:lolisnatcher/src/data/booru.dart';
 import 'package:lolisnatcher/src/data/theme_item.dart';
 import 'package:lolisnatcher/src/handlers/local_auth_handler.dart';
+import 'package:lolisnatcher/src/handlers/keyboard_handler.dart';
 import 'package:lolisnatcher/src/handlers/navigation_handler.dart';
 import 'package:lolisnatcher/src/handlers/notify_handler.dart';
 import 'package:lolisnatcher/src/handlers/search_handler.dart';
@@ -50,6 +51,7 @@ void main() async {
   // load settings before first render to get theme data early
   NavigationHandler.register();
   ViewerHandler.register();
+  KeyboardHandler.register();
   SearchHandler.register();
   SnatchHandler.register();
   TagHandler.register();
@@ -78,6 +80,7 @@ class _MainAppState extends State<MainApp> {
   final TagHandler tagHandler = TagHandler.instance;
   final NotifyHandler notifyHandler = NotifyHandler.instance;
   final LocalAuthHandler localAuthHandler = LocalAuthHandler.instance;
+  final KeyboardHandler keyboardHandler = KeyboardHandler.instance;
   OverlayScreen? overlayScreen;
 
   @override
@@ -90,6 +93,10 @@ class _MainAppState extends State<MainApp> {
   Future<void> initHandlers() async {
     searchHandler.setRootRestate(updateState);
     settingsHandler.alice.setNavigatorKey(navigationHandler.navigatorKey);
+    
+    // Load keyboard keybinds from settings
+    keyboardHandler.loadKeybinds();
+    
     await settingsHandler.postInit(() async {
       settingsHandler.postInitMessage.value = 'Loading tags...';
       // should init earlier than tabs so tags color properly on first render of search box
@@ -137,6 +144,7 @@ class _MainAppState extends State<MainApp> {
     NotifyHandler.unregister();
     NavigationHandler.unregister();
     ViewerHandler.unregister();
+    KeyboardHandler.unregister();
     SnatchHandler.unregister();
     SearchHandler.unregister();
     TagHandler.unregister();

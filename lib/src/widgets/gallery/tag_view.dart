@@ -40,7 +40,6 @@ import 'package:lolisnatcher/src/widgets/common/flash_elements.dart';
 import 'package:lolisnatcher/src/widgets/common/kaomoji.dart';
 import 'package:lolisnatcher/src/widgets/common/marquee_text.dart';
 import 'package:lolisnatcher/src/widgets/common/settings_widgets.dart';
-import 'package:lolisnatcher/src/widgets/desktop/desktop_scroll_wrap.dart';
 import 'package:lolisnatcher/src/widgets/dialogs/comments_dialog.dart';
 import 'package:lolisnatcher/src/widgets/gallery/notes_renderer.dart';
 import 'package:lolisnatcher/src/widgets/image/booru_favicon.dart';
@@ -1114,12 +1113,10 @@ class _TagViewState extends State<TagView> {
     return Scrollbar(
       interactive: true,
       controller: scrollController,
-      child: DesktopScrollWrap(
+      child: CustomScrollView(
         controller: scrollController,
-        child: CustomScrollView(
-          controller: scrollController,
-          physics: getListPhysics(), // const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-          slivers: [
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        slivers: [
             SliverList(
               delegate: SliverChildListDelegate(
                 [
@@ -1225,8 +1222,7 @@ class _TagViewState extends State<TagView> {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -1822,7 +1818,7 @@ class _TagContentPreviewState extends State<TagContentPreview> {
                               child: FadingEdgeScrollView.fromScrollView(
                                 child: ListView.builder(
                                   controller: scrollController,
-                                  physics: getListPhysics(),
+                                  physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                                   shrinkWrap: true,
                                   scrollDirection: Axis.horizontal,
                                   itemCount: tab!.booruHandler.filteredFetched.isEmpty

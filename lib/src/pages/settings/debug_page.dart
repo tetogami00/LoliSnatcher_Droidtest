@@ -126,17 +126,6 @@ class _DebugPageState extends State<DebugPage> {
                   },
                   title: 'Blur images + mute videos [DEV only]',
                 ),
-              if (SettingsHandler.isDesktopPlatform)
-                SettingsToggle(
-                  value: settingsHandler.desktopListsDrag,
-                  onChanged: (newValue) {
-                    setState(() {
-                      settingsHandler.desktopListsDrag = newValue;
-                    });
-                  },
-                  title: 'Enable drag scroll on lists [Desktop only]',
-                ),
-
               SettingsButton(
                 name: 'Animation speed ($timeDilation)',
                 icon: const Icon(Icons.timelapse),

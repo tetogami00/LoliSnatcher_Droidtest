@@ -14,7 +14,6 @@ import 'package:lolisnatcher/src/utils/extensions.dart';
 import 'package:lolisnatcher/src/widgets/common/flash_elements.dart';
 import 'package:lolisnatcher/src/widgets/common/kaomoji.dart';
 import 'package:lolisnatcher/src/widgets/common/settings_widgets.dart';
-import 'package:lolisnatcher/src/widgets/desktop/desktop_scroll_wrap.dart';
 import 'package:lolisnatcher/src/widgets/thumbnail/thumbnail_build.dart';
 
 // TODO parse [quote] https://github.com/flexbooru/flexbooru/blob/2084976a1db68c312ec4b9169f88e7425f35a539/android/src/main/java/onlymash/flexbooru/widget/CommentView.kt
@@ -167,15 +166,13 @@ class _CommentsDialogState extends State<CommentsDialog> {
             onRefresh: () async {
               await getComments(initial: true);
             },
-            child: DesktopScrollWrap(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
               controller: scrollController,
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                controller: scrollController,
-                physics: getListPhysics(), // const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                itemCount: areThereErrors ? 2 : comments.length + 1,
-                scrollDirection: Axis.vertical,
-                itemBuilder: (context, index) {
+              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              itemCount: areThereErrors ? 2 : comments.length + 1,
+              scrollDirection: Axis.vertical,
+              itemBuilder: (context, index) {
                   if (index == 0) {
                     return _CommentsHeader(
                       item: widget.item,
@@ -193,7 +190,6 @@ class _CommentsDialogState extends State<CommentsDialog> {
             ),
           ),
         ),
-      ),
       actions: [
         if (isLoading && comments.isNotEmpty)
           const SizedBox(

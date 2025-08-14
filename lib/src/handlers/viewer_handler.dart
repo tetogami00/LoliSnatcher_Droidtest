@@ -92,7 +92,6 @@ class ViewerHandler {
   final RxBool isLoaded = false.obs; // is current item loaded
   final Rx<PhotoViewControllerValue?> viewState = Rx(null); // current view controller value (used by notes renderer)
   final RxBool isFullscreen = false.obs; // is viewing video in fullscreen (mobile app mode)
-  final RxBool isDesktopFullscreen = false.obs; // is viewing video in fullscreen (desktop app mode)
 
   final RxBool showNotes = true.obs;
 
@@ -101,7 +100,6 @@ class ViewerHandler {
     isZoomed.value = false;
     isLoaded.value = false;
     setFullScreenState(false);
-    isDesktopFullscreen.value = false;
     viewState.value = null;
   }
 

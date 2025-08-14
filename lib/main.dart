@@ -9,10 +9,8 @@ import 'package:flutter/services.dart';
 import 'package:app_links/app_links.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 import 'package:lemberfpsmonitor/lemberfpsmonitor.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 import 'package:lolisnatcher/src/data/booru.dart';
@@ -28,7 +26,7 @@ import 'package:lolisnatcher/src/handlers/snatch_handler.dart';
 import 'package:lolisnatcher/src/handlers/tag_handler.dart';
 import 'package:lolisnatcher/src/handlers/theme_handler.dart';
 import 'package:lolisnatcher/src/handlers/viewer_handler.dart';
-import 'package:lolisnatcher/src/pages/desktop_home_page.dart';
+
 import 'package:lolisnatcher/src/pages/init_home_page.dart';
 import 'package:lolisnatcher/src/pages/lockscreen_page.dart';
 import 'package:lolisnatcher/src/pages/mobile_home_page.dart';
@@ -39,25 +37,13 @@ import 'package:lolisnatcher/src/widgets/common/settings_widgets.dart';
 import 'package:lolisnatcher/src/widgets/root/dev_overlay.dart';
 import 'package:lolisnatcher/src/widgets/root/image_stats.dart';
 import 'package:lolisnatcher/src/widgets/root/scroll_physics.dart';
-import 'package:lolisnatcher/src/widgets/webview/webview_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  if (Platform.isWindows || Platform.isLinux) {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  }
 
-  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.windows) {
-    final availableVersion = await WebViewEnvironment.getAvailableVersion();
-    assert(
-      availableVersion != null,
-      'Failed to find an installed WebView2 Runtime or non-stable Microsoft Edge installation.',
-    );
 
-    webViewEnvironment = await WebViewEnvironment.create();
-  }
+
 
   Logger.Inst();
 
@@ -468,13 +454,8 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
     if (Platform.isAndroid || Platform.isIOS) {
       ServiceHandler.setSystemUiVisibility(true);
 
-      // force landscape orientation if enabled desktop mode on mobile device
-      if (SettingsHandler.instance.appMode.value.isDesktop) {
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.landscapeRight,
-          DeviceOrientation.landscapeLeft,
-        ]);
-      } else {
+      // force portrait orientation if mobile app mode
+      if (SettingsHandler.instance.appMode.value.isMobile) {
         SystemChrome.setPreferredOrientations(DeviceOrientation.values);
       }
     }
@@ -495,11 +476,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
 
               initDeepLinks();
 
-              if (settingsHandler.appMode.value.isMobile) {
-                return const MobileHome();
-              } else {
-                return const DesktopHome();
-              }
+              return const MobileHome();
             },
           ),
         );

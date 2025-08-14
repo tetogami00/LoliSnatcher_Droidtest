@@ -48,7 +48,7 @@ class SettingsHandler {
 
   static void unregister() => GetIt.instance.unregister<SettingsHandler>();
 
-  static bool get isDesktopPlatform => Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+  static bool get isDesktopPlatform => false; // Desktop support removed
 
   DBHandler dbHandler = DBHandler();
 
@@ -97,8 +97,8 @@ class SettingsHandler {
   String drawerMascotPathOverride = '';
   String backupPath = '';
   String zoomButtonPosition = 'Right';
-  String changePageButtonsPosition = isDesktopPlatform ? 'Right' : 'Disabled';
-  String scrollGridButtonsPosition = isDesktopPlatform ? 'Right' : 'Disabled';
+  String changePageButtonsPosition = 'Disabled';
+  String scrollGridButtonsPosition = 'Disabled';
   String lastSyncIp = '';
   String lastSyncPort = '';
   // TODO move it to boorus themselves to have different user agents for different boorus?
@@ -107,11 +107,9 @@ class SettingsHandler {
   String proxyAddress = '';
   String proxyUsername = '';
   String proxyPassword = '';
-  VideoBackendMode videoBackendMode = isDesktopPlatform ? VideoBackendMode.mpv : VideoBackendMode.normal;
-  String altVideoPlayerVO = isDesktopPlatform ? 'libmpv' : 'gpu'; // mediakit default: gpu - android, libmpv - desktop
-  String altVideoPlayerHWDEC = isDesktopPlatform
-      ? 'auto'
-      : 'auto-safe'; // mediakit default: auto-safe - android, auto - desktop
+  VideoBackendMode videoBackendMode = VideoBackendMode.normal;
+  String altVideoPlayerVO = 'gpu'; // mediakit default: gpu - android
+  String altVideoPlayerHWDEC = 'auto-safe'; // mediakit default: auto-safe - android
 
   List<String> hatedTags = [];
   List<String> lovedTags = [];
@@ -198,7 +196,6 @@ class SettingsHandler {
   bool altVideoPlayerHwAccel = true;
   bool disableImageScaling = false;
   bool gifsAsThumbnails = false;
-  bool desktopListsDrag = false;
   bool showBottomSearchbar = true;
   bool useTopSearchbarInput = false;
   bool showSearchbarQuickActions = false;
@@ -273,7 +270,6 @@ class SettingsHandler {
     'showImageStats',
     'showVideoStats',
     'isDebug',
-    'desktopListsDrag',
     'incognitoKeyboard',
     'backupPath',
     'showBottomSearchbar',
@@ -357,17 +353,17 @@ class SettingsHandler {
     },
     'scrollGridButtonsPosition': {
       'type': 'stringFromList',
-      'default': isDesktopPlatform ? 'Right' : 'Disabled',
+      'default': 'Disabled',
       'options': <String>['Disabled', 'Left', 'Right'],
     },
     'videoBackendMode': {
       'type': 'videoBackendMode',
-      'default': isDesktopPlatform ? VideoBackendMode.mpv : VideoBackendMode.defaultValue,
+      'default': VideoBackendMode.defaultValue,
       'options': VideoBackendMode.values,
     },
     'altVideoPlayerVO': {
       'type': 'stringFromList',
-      'default': isDesktopPlatform ? 'libmpv' : 'gpu', // mediakit default: gpu - android, libmpv - desktop
+      'default': 'gpu', // mediakit default: gpu - android
       'options': <String>[
         'gpu',
         'gpu-next',
@@ -378,7 +374,7 @@ class SettingsHandler {
     },
     'altVideoPlayerHWDEC': {
       'type': 'stringFromList',
-      'default': isDesktopPlatform ? 'auto' : 'auto-safe', // mediakit default: auto-safe - android, auto - desktop
+      'default': 'auto-safe', // mediakit default: auto-safe - android
       'options': <String>[
         'auto',
         'auto-safe',
@@ -623,10 +619,6 @@ class SettingsHandler {
       'type': 'bool',
       'default': false,
     },
-    'desktopListsDrag': {
-      'type': 'bool',
-      'default': false,
-    },
     'wakeLockEnabled': {
       'type': 'bool',
       'default': true,
@@ -677,7 +669,7 @@ class SettingsHandler {
     },
     'useAltVideoPlayer': {
       'type': 'bool',
-      'default': isDesktopPlatform,
+      'default': false,
     },
     'altVideoPlayerHwAccel': {
       'type': 'bool',
@@ -1136,8 +1128,6 @@ class SettingsHandler {
         return disableImageScaling;
       case 'gifsAsThumbnails':
         return gifsAsThumbnails;
-      case 'desktopListsDrag':
-        return desktopListsDrag;
       case 'cacheDuration':
         return cacheDuration;
       case 'cacheSize':
@@ -1379,9 +1369,6 @@ class SettingsHandler {
       case 'gifsAsThumbnails':
         gifsAsThumbnails = validatedValue;
         break;
-      case 'desktopListsDrag':
-        desktopListsDrag = validatedValue;
-        break;
       case 'cacheDuration':
         cacheDuration = validatedValue;
         break;
@@ -1573,7 +1560,6 @@ class SettingsHandler {
       'scrollGridButtonsPosition': validateValue('scrollGridButtonsPosition', null, toJSON: true),
       'disableImageScaling': validateValue('disableImageScaling', null, toJSON: true),
       'gifsAsThumbnails': validateValue('gifsAsThumbnails', null, toJSON: true),
-      'desktopListsDrag': validateValue('desktopListsDrag', null, toJSON: true),
       'cacheDuration': validateValue('cacheDuration', null, toJSON: true),
       'cacheSize': validateValue('cacheSize', null, toJSON: true),
       'autoLockTimeout': validateValue('autoLockTimeout', null, toJSON: true),
@@ -2401,20 +2387,16 @@ class SettingsHandler {
       postInitMessage.value = 'Setting up proxy...';
       await initProxy();
 
-      if (isDesktopPlatform) {
-        MediaKitVideoPlayer.registerWith();
-      } else {
-        switch (videoBackendMode) {
-          case VideoBackendMode.normal:
-            MediaKitVideoPlayer.registerNative();
-            break;
-          case VideoBackendMode.mpv:
-            MediaKitVideoPlayer.registerWith();
-            break;
-          case VideoBackendMode.mdk:
-            fvp.registerWith();
-            break;
-        }
+      switch (videoBackendMode) {
+        case VideoBackendMode.normal:
+          MediaKitVideoPlayer.registerNative();
+          break;
+        case VideoBackendMode.mpv:
+          MediaKitVideoPlayer.registerWith();
+          break;
+        case VideoBackendMode.mdk:
+          fvp.registerWith();
+          break;
       }
 
       postInitMessage.value = 'Loading Database...';

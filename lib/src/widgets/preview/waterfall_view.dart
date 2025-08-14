@@ -16,7 +16,6 @@ import 'package:lolisnatcher/src/handlers/viewer_handler.dart';
 import 'package:lolisnatcher/src/pages/gallery_view_page.dart';
 import 'package:lolisnatcher/src/widgets/common/flash_elements.dart';
 import 'package:lolisnatcher/src/widgets/common/long_press_repeater.dart';
-import 'package:lolisnatcher/src/widgets/desktop/desktop_scroll_wrap.dart';
 import 'package:lolisnatcher/src/widgets/preview/grid_builder.dart';
 import 'package:lolisnatcher/src/widgets/preview/shimmer_builder.dart';
 import 'package:lolisnatcher/src/widgets/preview/staggered_builder.dart';
@@ -375,15 +374,13 @@ class _WaterfallViewState extends State<WaterfallView> with RouteAware {
               },
               child: Stack(
                 children: [
-                  DesktopScrollWrap(
-                    controller: searchHandler.gridScrollController,
-                    child: ValueListenableBuilder(
-                      valueListenable: isActive,
-                      builder: (context, isActive, child) {
-                        return ShimmerWrap(
-                          enabled: isActive && !SettingsHandler.instance.shitDevice,
-                          child: child ?? const SizedBox.shrink(),
-                        );
+                  ValueListenableBuilder(
+                    valueListenable: isActive,
+                    builder: (context, isActive, child) {
+                      return ShimmerWrap(
+                        enabled: isActive && !SettingsHandler.instance.shitDevice,
+                        child: child ?? const SizedBox.shrink(),
+                      );
                       },
                       child: Obx(() {
                         final bool isLoadingAndNoItems =
@@ -398,10 +395,10 @@ class _WaterfallViewState extends State<WaterfallView> with RouteAware {
 
                         return CustomScrollView(
                           key: ValueKey('CustomScrollView-${searchHandler.currentTabId}'),
-                          controller: searchHandler.gridScrollController,
-                          physics: isLoadingAndNoItems
-                              ? const NeverScrollableScrollPhysics()
-                              : getListPhysics(), // const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                        controller: searchHandler.gridScrollController,
+                        physics: isLoadingAndNoItems
+                            ? const NeverScrollableScrollPhysics()
+                            : const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                           shrinkWrap: false,
                           cacheExtent: 200,
                           slivers: [
@@ -453,7 +450,6 @@ class _WaterfallViewState extends State<WaterfallView> with RouteAware {
                           ],
                         );
                       }),
-                    ),
                   ),
                   Positioned(
                     bottom: MediaQuery.viewPaddingOf(context).bottom + 120,

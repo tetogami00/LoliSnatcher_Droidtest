@@ -22,6 +22,7 @@ void main() {
       expect(KeyboardAction.nextPost.displayName, 'Next Post');
       expect(KeyboardAction.previousPost.displayName, 'Previous Post');
       expect(KeyboardAction.playPause.displayName, 'Play/Pause');
+      expect(KeyboardAction.skipVideoForward.displayName, 'Skip Video Forward');
       expect(KeyboardAction.showTags.displayName, 'Show Tags');
     });
 
@@ -29,6 +30,7 @@ void main() {
       expect(KeyboardAction.nextPost.description, 'Navigate to the next post');
       expect(KeyboardAction.previousPost.description, 'Navigate to the previous post');
       expect(KeyboardAction.playPause.description, 'Play or pause video playback');
+      expect(KeyboardAction.skipVideoForward.description, 'Skip video forward by 5 seconds');
       expect(KeyboardAction.showTags.description, 'Display post tags');
     });
   });

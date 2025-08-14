@@ -243,6 +243,29 @@ class ViewerHandler {
     }
   }
 
+  void skipVideoForward(Duration duration) {
+    final state = (current.value?.key as GlobalKey?)?.currentState;
+    switch (state?.widget) {
+      case VideoViewer():
+        final controller = (state as VideoViewerState?)?.videoController.value;
+        if (controller != null && controller.value.isInitialized) {
+          final currentPosition = controller.value.position;
+          final newPosition = currentPosition + duration;
+          final maxDuration = controller.value.duration;
+          
+          // Don't seek beyond the video duration
+          if (newPosition <= maxDuration) {
+            controller.seekTo(newPosition);
+          } else {
+            controller.seekTo(maxDuration);
+          }
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
   void setFullScreenState(bool value) {
     isFullscreen.value = value;
   }

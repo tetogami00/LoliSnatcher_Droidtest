@@ -21,23 +21,25 @@ class KeyboardHandler {
 
   static void unregister() => GetIt.instance.unregister<KeyboardHandler>();
 
+  KeyboardHandler() {
+    _loadDefaultKeybinds();
+  }
+
   final SettingsHandler _settingsHandler = SettingsHandler.instance;
   final ViewerHandler _viewerHandler = ViewerHandler.instance;
 
   // Stream controller for keyboard events
   final StreamController<KeyboardAction> _keyboardStreamController = StreamController.broadcast();
-  Stream<KeyboardAction> get keyboardStream => _keyboardStreamController.stream;
-
+  
   // Current active keybinds
   Map<String, KeyboardAction> _keybinds = {};
 
   // Observable for UI updates when keybinds change
   final RxBool _keybindsUpdated = false.obs;
-  RxBool get keybindsUpdated => _keybindsUpdated;
 
-  KeyboardHandler() {
-    _loadDefaultKeybinds();
-  }
+  Stream<KeyboardAction> get keyboardStream => _keyboardStreamController.stream;
+
+  RxBool get keybindsUpdated => _keybindsUpdated;
 
   void dispose() {
     _keyboardStreamController.close();
@@ -57,6 +59,7 @@ class KeyboardHandler {
       'KeyM': KeyboardAction.mute,
       'Equal': KeyboardAction.volumeUp,
       'Minus': KeyboardAction.volumeDown,
+      'KeyD': KeyboardAction.skipVideoForward,
       
       // Information display
       'KeyI': KeyboardAction.showInfo,
@@ -163,6 +166,9 @@ class KeyboardHandler {
       case KeyboardAction.volumeDown:
         _viewerHandler.adjustVolume(-0.1);
         break;
+      case KeyboardAction.skipVideoForward:
+        _viewerHandler.skipVideoForward(const Duration(seconds: 5));
+        break;
       case KeyboardAction.showInfo:
         // Will be implemented
         break;
@@ -240,6 +246,7 @@ enum KeyboardAction {
   mute,
   volumeUp,
   volumeDown,
+  skipVideoForward,
   showInfo,
   showTags,
   toggleUI,
@@ -267,6 +274,8 @@ extension KeyboardActionExtension on KeyboardAction {
         return 'Volume Up';
       case KeyboardAction.volumeDown:
         return 'Volume Down';
+      case KeyboardAction.skipVideoForward:
+        return 'Skip Video Forward';
       case KeyboardAction.showInfo:
         return 'Show Info';
       case KeyboardAction.showTags:
@@ -298,6 +307,8 @@ extension KeyboardActionExtension on KeyboardAction {
         return 'Increase video volume';
       case KeyboardAction.volumeDown:
         return 'Decrease video volume';
+      case KeyboardAction.skipVideoForward:
+        return 'Skip video forward by 5 seconds';
       case KeyboardAction.showInfo:
         return 'Display post information';
       case KeyboardAction.showTags:

@@ -18,6 +18,7 @@ The keyboard control feature adds comprehensive keyboard shortcuts to LoliSnatch
 | `M` | Mute/Unmute | Toggle video audio |
 | `+` (Equal) | Volume Up | Increase video volume |
 | `-` (Minus) | Volume Down | Decrease video volume |
+| `D` | Skip Video Forward | Skip video forward by 5 seconds |
 | `I` | Show Info | Display current post information |
 | `T` | Show Tags | Display current post tags |
 | `H` | Toggle UI | Show/hide the interface toolbar |
@@ -42,6 +43,7 @@ The keyboard control feature adds comprehensive keyboard shortcuts to LoliSnatch
 - `Space` to play/pause videos
 - `M` to mute/unmute
 - `+`/`-` to adjust volume
+- `D` to skip forward 5 seconds in the video
 - Arrow keys also work for zoom control on videos
 
 ### Customization
